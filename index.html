@@ -806,6 +806,7 @@
         function setupEventListeners() {
             // Close modals when clicking outside
             document.addEventListener('click', function(e) {
+                
                 if (e.target.classList.contains('modal')) {
                     closeEventModal();
                 }
@@ -815,6 +816,18 @@
                 if (e.target.classList.contains('delete-modal')) {
                     closeDeleteModal();
                 }
+                // Listen for real-time updates
+    if (window.db) {
+    const { collection, onSnapshot } = window.firebaseModules;
+    onSnapshot(collection(window.db, 'events'), (snapshot) => {
+        events = [];
+        snapshot.forEach((doc) => {
+            events.push({ id: doc.id, ...doc.data() });
+        });
+        renderCalendar();
+        updateUpcomingEvents();
+    });
+}
             });
         }
 
@@ -956,7 +969,16 @@
                         const deleteHandler = (event) => {
                             if (this.classList.contains('delete-mode')) {
                                 event.stopPropagation();
-                                deleteEventDirectly(event.id);
+                                async function deleteEventDirectly(eventId) {
+    try {
+        const { deleteDoc, doc } = window.firebaseModules;
+        await deleteDoc(doc(window.db, 'events', eventId));
+        showToast('Event deleted successfully!');
+    } catch (error) {
+        console.error('Error deleting:', error);
+        showToast('Error deleting event', 'error');
+    }
+}
                                 this.removeEventListener('click', deleteHandler);
                             }
                         };
@@ -1171,7 +1193,37 @@
         }
 
         // Save event
-        function saveEvent() {
+        async function saveEvent() {
+    if (!validateForm()) return;
+
+    const eventData = {
+        title: document.getElementById('eventTitle').value.trim(),
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value,
+        location: document.getElementById('location').value,
+        address: document.getElementById('address').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        image: uploadedImage,
+        createdAt: new Date().toISOString()
+    };
+
+    try {
+        const { collection, addDoc, updateDoc, doc } = window.firebaseModules;
+        
+        if (editingEventId) {
+            await updateDoc(doc(window.db, 'events', editingEventId), eventData);
+            showToast('Event updated successfully!');
+        } else {
+            await addDoc(collection(window.db, 'events'), eventData);
+            showToast('Event created successfully!');
+        }
+    } catch (error) {
+        console.error('Error saving:', error);
+        showToast('Error saving event', 'error');
+    }
+
+    closeEventModal();
+}
             if (!validateForm()) {
                 return;
             }
