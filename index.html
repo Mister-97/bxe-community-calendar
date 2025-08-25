@@ -629,20 +629,6 @@
             }
         }
     </style>
-    <div class="calendar-container">
-    <div class="calendar-header">
-        <div class="calendar-nav">
-            <button class="nav-btn" onclick="previousMonth()">‹</button>
-            <div class="month-year" id="monthYear"></div>
-            <button class="nav-btn" onclick="nextMonth()">›</button>
-        </div>
-        <div class="controls">
-            <button class="btn btn-secondary" onclick="goToToday()">Today</button>
-            <button class="btn btn-primary" onclick="openAddEventModal()">+ Add Event</button>
-        </div>
-    </div>
-    <div class="calendar-grid" id="calendarGrid"></div>
-</div>
 </head>
 <body>
     <div class="container">
@@ -684,6 +670,8 @@
             </div>
         </div>
     </div>
+
+    
 
     <!-- Add/Edit Event Modal -->
     <div id="eventModal" class="modal">
@@ -1000,3 +988,40 @@
                     eventElement.addEventListener('dblclick', function(e) {
                         e.stopPropagation();
                         this.classList.add('delete-mode');
+
+                        <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BXE Community Calendar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Calendar Container -->
+    <div class="calendar-container">
+      <div class="calendar-header">
+        <div class="calendar-nav">
+          <button class="nav-btn" onclick="previousMonth()">‹</button>
+          <div class="month-year" id="monthYear"></div>
+          <button class="nav-btn" onclick="nextMonth()">›</button>
+        </div>
+        <div class="controls">
+          <button class="btn btn-secondary" onclick="goToToday()">Today</button>
+          <button class="btn btn-primary" onclick="openAddEventModal()">+ Add Event</button>
+        </div>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+  </div>
+
+  <!-- Your modals go here -->
+  <div id="eventModal" class="modal">…</div>
+  <div id="previewModal" class="preview-modal">…</div>
+  <div id="deleteModal" class="delete-modal">…</div>
+
+  <!-- Scripts at bottom of body -->
+  <script src="script.js"></script>
+</body>
+</html>
+
