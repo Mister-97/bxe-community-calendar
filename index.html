@@ -1370,5 +1370,25 @@
 Need help? Contact support!`);
         }
     </script>
+    <!-- Firebase SDK -->
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAQQwmtpr17jHgx73ux6TaaXRJgwPqTTSM",
+        authDomain: "bxe-community-calendar.firebaseapp.com",
+        projectId: "bxe-community-calendar",
+        storageBucket: "bxe-community-calendar.firebasestorage.app",
+        messagingSenderId: "99255180622",
+        appId: "1:99255180622:web:2be196ce5aadcb55eb921f",
+        measurementId: "G-HD861K8CNG"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.firebaseModules = { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot };
+</script>
 </body>
 </html>
