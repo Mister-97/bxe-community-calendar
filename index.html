@@ -629,6 +629,20 @@
             }
         }
     </style>
+    <div class="calendar-container">
+    <div class="calendar-header">
+        <div class="calendar-nav">
+            <button class="nav-btn" onclick="previousMonth()">‹</button>
+            <div class="month-year" id="monthYear"></div>
+            <button class="nav-btn" onclick="nextMonth()">›</button>
+        </div>
+        <div class="controls">
+            <button class="btn btn-secondary" onclick="goToToday()">Today</button>
+            <button class="btn btn-primary" onclick="openAddEventModal()">+ Add Event</button>
+        </div>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+</div>
 </head>
 <body>
     <div class="container">
