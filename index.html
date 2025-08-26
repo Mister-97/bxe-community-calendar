@@ -4,6 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BXE Community Calendar</title>
+    
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <script>
+        // Initialize Firebase immediately after loading
+        const firebaseConfig = {
+            apiKey: "AIzaSyAQQwmtpr17jHgx73ux6TaaXRJgwPqTTSM",
+            authDomain: "bxe-community-calendar.firebaseapp.com",
+            projectId: "bxe-community-calendar",
+            storageBucket: "bxe-community-calendar.firebasestorage.app",
+            messagingSenderId: "99255180622",
+            appId: "1:99255180622:web:2be196ce5aadcb55eb921f",
+            measurementId: "G-HD861K8CNG"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+    </script>
+    
     <style>
         * {
             margin: 0;
@@ -839,12 +862,27 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            renderCalendar();
-            updateUpcomingEvents();
+            loadEventsFromFirebase();
             setupImageUpload();
             setupEventListeners();
             setupSearch();
         });
+
+        // Load events from Firebase
+        function loadEventsFromFirebase() {
+            db.collection('events').get().then((querySnapshot) => {
+                events = [];
+                querySnapshot.forEach((doc) => {
+                    events.push({ id: doc.id, ...doc.data() });
+                });
+                renderCalendar();
+                updateUpcomingEvents();
+            }).catch((error) => {
+                console.error("Error loading events: ", error);
+                renderCalendar();
+                updateUpcomingEvents();
+            });
+        }
 
         // Setup search
         function setupSearch() {
@@ -1264,32 +1302,77 @@
             }
 
             const eventData = {
-                id: editingEventId || Date.now(),
                 title: document.getElementById('eventTitle').value.trim(),
                 startDate: document.getElementById('startDate').value,
                 endDate: document.getElementById('endDate').value,
                 location: document.getElementById('location').value,
                 address: document.getElementById('address').value.trim(),
                 description: document.getElementById('description').value.trim(),
-                image: uploadedImage
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
+
+            // Show loading state
+            const saveBtn = document.getElementById('saveEventBtn');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+
+            if (uploadedImage) {
+                // Upload image first, then save event
+                uploadImageToFirebase(eventData, originalText);
+            } else {
+                // Save event without image
+                saveEventToFirebase(eventData, originalText);
+            }
+        }
+
+        // Upload image to Firebase Storage
+        function uploadImageToFirebase(eventData, originalText) {
+            const imageRef = storage.ref().child('event-images/' + Date.now() + '.jpg');
+            
+            imageRef.putString(uploadedImage, 'data_url').then(() => {
+                return imageRef.getDownloadURL();
+            }).then((downloadURL) => {
+                eventData.image = downloadURL;
+                saveEventToFirebase(eventData, originalText);
+            }).catch((error) => {
+                console.error("Error uploading image: ", error);
+                showToast('Failed to upload image. Event saved without image.', 'warning');
+                saveEventToFirebase(eventData, originalText);
+            });
+        }
+
+        // Save event to Firestore
+        function saveEventToFirebase(eventData, originalText) {
+            const saveBtn = document.getElementById('saveEventBtn');
 
             if (editingEventId) {
                 // Update existing event
-                const index = events.findIndex(e => e.id === editingEventId);
-                if (index !== -1) {
-                    events[index] = eventData;
+                db.collection('events').doc(editingEventId).update(eventData).then(() => {
                     showToast('Event updated successfully!');
-                }
+                    loadEventsFromFirebase();
+                    closeEventModal();
+                }).catch((error) => {
+                    console.error("Error updating event: ", error);
+                    showToast('Failed to update event. Please try again.', 'error');
+                }).finally(() => {
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                });
             } else {
                 // Add new event
-                events.push(eventData);
-                showToast('Event created successfully!');
+                db.collection('events').add(eventData).then(() => {
+                    showToast('Event created successfully!');
+                    loadEventsFromFirebase();
+                    closeEventModal();
+                }).catch((error) => {
+                    console.error("Error adding event: ", error);
+                    showToast('Failed to create event. Please try again.', 'error');
+                }).finally(() => {
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                });
             }
-
-            renderCalendar();
-            updateUpcomingEvents();
-            closeEventModal();
         }
 
         // Show event preview
@@ -1381,10 +1464,13 @@
 
         // Delete event directly
         function deleteEventDirectly(eventId) {
-            events = events.filter(event => event.id !== eventId);
-            renderCalendar();
-            updateUpcomingEvents();
-            showToast('Event deleted successfully!');
+            db.collection('events').doc(eventId).delete().then(() => {
+                showToast('Event deleted successfully!');
+                loadEventsFromFirebase();
+            }).catch((error) => {
+                console.error("Error deleting event: ", error);
+                showToast('Failed to delete event. Please try again.', 'error');
+            });
         }
 
         // Format datetime local
