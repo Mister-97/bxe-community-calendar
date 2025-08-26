@@ -398,10 +398,17 @@
             margin-bottom: 10px;
             border-radius: 0 8px 8px 0;
             cursor: pointer;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
         }
 
         .upcoming-event:hover {
             background: #404040;
+        }
+
+        .upcoming-event-content {
+            flex: 1;
         }
 
         .upcoming-event-title {
@@ -413,6 +420,14 @@
         .upcoming-event-date {
             font-size: 12px;
             color: #ffd700;
+        }
+
+        .upcoming-event-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
         }
 
         .no-events {
@@ -968,17 +983,15 @@
                 const dayEvents = getEventsForDay(cellDate);
                 const eventsContainer = dayCell.querySelector('.events');
                 
-                dayEvents.forEach(eventData => {
+                dayEvents.forEach(event => {
                     const eventElement = document.createElement('div');
                     eventElement.className = 'event';
-                    eventElement.textContent = eventData.title;
-                    eventElement.setAttribute('data-event-id', eventData.id);
-
+                    eventElement.textContent = event.title;
                     // Single click to preview
                     eventElement.addEventListener('click', function(e) {
                         e.stopPropagation();
                         if (!this.classList.contains('delete-mode')) {
-                            showEventPreview(eventData.id);
+                            showEventPreview(event.id);
                         }
                     });
 
@@ -986,3 +999,458 @@
                     eventElement.addEventListener('dblclick', function(e) {
                         e.stopPropagation();
                         this.classList.add('delete-mode');
+                        
+                        setTimeout(() => {
+                            this.classList.remove('delete-mode');
+                        }, 3000);
+
+                        const deleteHandler = (clickEvent) => {
+                            if (this.classList.contains('delete-mode')) {
+                                clickEvent.stopPropagation();
+                                deleteEventDirectly(event.id);
+                                this.removeEventListener('click', deleteHandler);
+                            }
+                        };
+                        
+                        this.addEventListener('click', deleteHandler);
+                    });
+
+                    eventsContainer.appendChild(eventElement);
+                });
+
+                grid.appendChild(dayCell);
+            }
+        }
+
+        // Get events for specific day
+        function getEventsForDay(date) {
+            return events.filter(event => {
+                const eventDate = new Date(event.startDate);
+                return isSameDay(eventDate, date);
+            });
+        }
+
+        // Check if same day
+        function isSameDay(date1, date2) {
+            return date1.getDate() === date2.getDate() &&
+                   date1.getMonth() === date2.getMonth() &&
+                   date1.getFullYear() === date2.getFullYear();
+        }
+
+        // Update upcoming events
+        function updateUpcomingEvents() {
+            const container = document.getElementById('upcomingEvents');
+            let upcomingEvents = events
+                .filter(event => new Date(event.startDate) > today)
+                .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
+            // Apply search filter
+            if (currentSearchQuery) {
+                const searchLower = currentSearchQuery.toLowerCase();
+                upcomingEvents = upcomingEvents.filter(event => {
+                    const title = (event.title || '').toLowerCase();
+                    const description = (event.description || '').toLowerCase();
+                    const location = (event.location || '').toLowerCase();
+                    const address = (event.address || '').toLowerCase();
+                    
+                    return title.includes(searchLower) ||
+                           description.includes(searchLower) ||
+                           location.includes(searchLower) ||
+                           address.includes(searchLower);
+                });
+                
+                if (upcomingEvents.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-events">
+                            <p>🔍 No events found</p>
+                            <p style="font-size: 12px;">Try a different search term</p>
+                        </div>
+                    `;
+                    return;
+                }
+            } else {
+                upcomingEvents = upcomingEvents.slice(0, 5);
+            }
+
+            if (upcomingEvents.length === 0) {
+                container.innerHTML = `
+                    <div class="no-events">
+                        <p>📅 No upcoming events</p>
+                        <p style="font-size: 12px;">Create your first event!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = upcomingEvents.map(event => {
+                const imageHtml = event.image 
+                    ? `<img src="${event.image}" class="upcoming-event-image" alt="${event.title}">`
+                    : '';
+                
+                return `
+                    <div class="upcoming-event" onclick="showEventPreview(${event.id})">
+                        <div class="upcoming-event-content">
+                            <div class="upcoming-event-title">${event.title}</div>
+                            <div class="upcoming-event-date">${formatEventDate(event.startDate)}</div>
+                        </div>
+                        ${imageHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Format event date
+        function formatEventDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Navigation functions
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        function goToToday() {
+            currentDate = new Date(today);
+            renderCalendar();
+        }
+
+        // Open add event modal
+        function openAddEventModal(selectedDate = null) {
+            editingEventId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Event';
+            document.getElementById('saveEventBtn').textContent = 'Save Event';
+            
+            // Reset form
+            clearForm();
+            
+            // Set default dates if date selected
+            if (selectedDate) {
+                const start = new Date(selectedDate);
+                start.setHours(9, 0);
+                const end = new Date(selectedDate);
+                end.setHours(10, 0);
+                
+                document.getElementById('startDate').value = formatDateTimeLocal(start);
+                document.getElementById('endDate').value = formatDateTimeLocal(end);
+            }
+            
+            document.getElementById('eventModal').classList.add('show');
+        }
+
+        // Open edit event modal
+        function openEditEventModal(eventId) {
+            const event = events.find(e => e.id === eventId);
+            if (!event) return;
+            
+            editingEventId = eventId;
+            document.getElementById('modalTitle').textContent = 'Edit Event';
+            document.getElementById('saveEventBtn').textContent = 'Update Event';
+            
+            // Fill form with event data
+            document.getElementById('eventTitle').value = event.title;
+            document.getElementById('startDate').value = event.startDate;
+            document.getElementById('endDate').value = event.endDate;
+            document.getElementById('location').value = event.location || '';
+            document.getElementById('address').value = event.address || '';
+            document.getElementById('description').value = event.description || '';
+            
+            // Handle image
+            if (event.image) {
+                uploadedImage = event.image;
+                showImagePreview(event.image);
+            } else {
+                resetImageUpload();
+            }
+            
+            document.getElementById('eventModal').classList.add('show');
+        }
+
+        // Close event modal
+        function closeEventModal() {
+            document.getElementById('eventModal').classList.remove('show');
+            clearForm();
+            clearErrors();
+            resetImageUpload();
+            editingEventId = null;
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('location').value = '';
+            document.getElementById('address').value = '';
+            document.getElementById('description').value = '';
+        }
+
+        // Clear form errors
+        function clearErrors() {
+            const errorElements = document.querySelectorAll('.error-message');
+            const inputElements = document.querySelectorAll('.form-input, .form-select, .form-textarea');
+            
+            errorElements.forEach(error => error.classList.remove('show'));
+            inputElements.forEach(input => input.classList.remove('error'));
+        }
+
+        // Validate form
+        function validateForm() {
+            clearErrors();
+            let isValid = true;
+
+            const title = document.getElementById('eventTitle').value.trim();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            // Validate title
+            if (!title) {
+                showError('eventTitle', 'titleError', 'Please enter an event title');
+                isValid = false;
+            }
+
+            // Validate start date
+            if (!startDate) {
+                showError('startDate', 'startError', 'Please select a start date');
+                isValid = false;
+            }
+
+            // Validate end date
+            if (!endDate) {
+                showError('endDate', 'endError', 'Please select an end date');
+                isValid = false;
+            }
+
+            // Validate date logic
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                
+                if (end <= start) {
+                    showError('endDate', 'endError', 'End date must be after start date');
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        }
+
+        // Show field error
+        function showError(fieldId, errorId, message) {
+            const field = document.getElementById(fieldId);
+            const error = document.getElementById(errorId);
+            
+            field.classList.add('error');
+            error.textContent = message;
+            error.classList.add('show');
+        }
+
+        // Save event
+        function saveEvent() {
+            if (!validateForm()) {
+                return;
+            }
+
+            const eventData = {
+                id: editingEventId || Date.now(),
+                title: document.getElementById('eventTitle').value.trim(),
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                location: document.getElementById('location').value,
+                address: document.getElementById('address').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                image: uploadedImage
+            };
+
+            if (editingEventId) {
+                // Update existing event
+                const index = events.findIndex(e => e.id === editingEventId);
+                if (index !== -1) {
+                    events[index] = eventData;
+                    showToast('Event updated successfully!');
+                }
+            } else {
+                // Add new event
+                events.push(eventData);
+                showToast('Event created successfully!');
+            }
+
+            renderCalendar();
+            updateUpcomingEvents();
+            closeEventModal();
+        }
+
+        // Show event preview
+        function showEventPreview(eventId) {
+            const event = events.find(e => e.id === eventId);
+            if (!event) return;
+
+            selectedEventId = eventId;
+
+            // Update preview content
+            document.getElementById('previewTitle').textContent = event.title;
+            document.getElementById('previewStart').textContent = formatEventDate(event.startDate);
+            document.getElementById('previewEnd').textContent = formatEventDate(event.endDate);
+
+            // Handle optional fields
+            showHideField('previewLocationField', 'previewLocation', event.location);
+            showHideField('previewAddressField', 'previewAddress', event.address);
+            showHideField('previewDescField', 'previewDesc', event.description);
+
+            // Handle image
+            const imageContainer = document.getElementById('previewImageContainer');
+            if (event.image) {
+                imageContainer.innerHTML = `<img src="${event.image}" class="preview-image" alt="Event image">`;
+            } else {
+                imageContainer.innerHTML = '';
+            }
+
+            document.getElementById('previewModal').classList.add('show');
+        }
+
+        // Show/hide preview field
+        function showHideField(fieldId, valueId, value) {
+            const field = document.getElementById(fieldId);
+            const valueElement = document.getElementById(valueId);
+            
+            if (value && value.trim()) {
+                valueElement.textContent = value;
+                field.style.display = 'flex';
+            } else {
+                field.style.display = 'none';
+            }
+        }
+
+        // Close preview modal
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.remove('show');
+            document.getElementById('dropdownMenu').classList.remove('show');
+            selectedEventId = null;
+        }
+
+        // Toggle dropdown
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('show');
+        }
+
+        // Edit current event
+        function editCurrentEvent() {
+            if (!selectedEventId) return;
+            
+            document.getElementById('dropdownMenu').classList.remove('show');
+            closePreviewModal();
+            openEditEventModal(selectedEventId);
+        }
+
+        // Delete from preview
+        function deleteFromPreview() {
+            if (!selectedEventId) return;
+            
+            eventToDelete = selectedEventId;
+            document.getElementById('dropdownMenu').classList.remove('show');
+            closePreviewModal();
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        // Close delete modal
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            eventToDelete = null;
+        }
+
+        // Confirm delete event
+        function confirmDeleteEvent() {
+            if (eventToDelete) {
+                deleteEventDirectly(eventToDelete);
+                closeDeleteModal();
+            }
+        }
+
+        // Delete event directly
+        function deleteEventDirectly(eventId) {
+            events = events.filter(event => event.id !== eventId);
+            renderCalendar();
+            updateUpcomingEvents();
+            showToast('Event deleted successfully!');
+        }
+
+        // Format datetime local
+        function formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        // Show toast message
+        function showToast(message, type = 'success') {
+            // Remove existing toast
+            const existing = document.querySelector('.success-toast');
+            if (existing) {
+                existing.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = 'success-toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // Hide and remove toast
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Show help
+        function showHelp() {
+            alert('BXE Community Calendar Help:\n\n' +
+                '📅 Creating Events:\n' +
+                '• Click on any date or use "+ Add Event" button\n' +
+                '• Fill in required fields (marked with *)\n' +
+                '• Upload an image if desired\n' +
+                '• Click "Save Event"\n\n' +
+                '🔍 Viewing Events:\n' +
+                '• Click any event to see full details\n' +
+                '• View upcoming events in the sidebar below\n' +
+                '• Use the search box to find specific upcoming events\n\n' +
+                '✏️ Editing Events:\n' +
+                '• Click event to open preview\n' +
+                '• Click three dots (⋯) menu\n' +
+                '• Select "Edit Event"\n\n' +
+                '🗑️ Deleting Events:\n' +
+                '• Double-click event for quick delete\n' +
+                '• OR preview event → three dots → "Delete this event"\n\n' +
+                '📱 Navigation:\n' +
+                '• Use ← → arrows for months\n' +
+                '• "Today" button returns to current date\n\n' +
+                'Need help? Contact support!');
+        }
+    </script>
+</body>
+</html>
