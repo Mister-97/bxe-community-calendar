@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Experience Community Calendar</title>
+    <title>BXE Community Calendar</title>
     
     <!-- Firebase CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -1061,6 +1061,8 @@
                     if (e.target.id === 'authModal') closeAuthModal();
                     if (e.target.id === 'onboardingModal') closeOnboardingModal();
                     if (e.target.id === 'eventModal') closeEventModal();
+                    if (e.target.id === 'termsModal') closeTermsModal();
+                    if (e.target.id === 'guidelinesModal') closeGuidelinesModal();
                 }
             });
         }
@@ -1247,7 +1249,44 @@
             alert(`Event: ${event.title}\n\nStart: ${formatEventDate(event.start)}\nEnd: ${formatEventDate(event.end)}\nLocation: ${event.location || 'No location specified'}\nCreated by: ${event.created_by_name}\n\nDescription:\n${event.description || 'No description'}`);
         }
 
-        // Navigation functions
+        // Admin delete event function
+        function adminDeleteEvent(eventId, eventTitle) {
+            if (!isAdmin) {
+                showToast('Access denied. Admin privileges required.', 'error');
+                return;
+            }
+            
+            const reason = prompt(`Admin Action: Delete event "${eventTitle}"?\n\nOptional: Enter reason for deletion (will be logged):`);
+            
+            if (reason !== null) { // User didn't cancel
+                deleteEventWithReason(eventId, eventTitle, reason || 'No reason provided');
+            }
+        }
+
+        // Delete event with admin logging
+        async function deleteEventWithReason(eventId, eventTitle, reason) {
+            try {
+                // Log the admin action
+                await db.collection('admin_actions').add({
+                    action: 'delete_event',
+                    event_id: eventId,
+                    event_title: eventTitle,
+                    admin_email: currentUser.email,
+                    admin_name: userProfile.full_name,
+                    reason: reason,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Delete the event
+                await db.collection('events').doc(eventId).delete();
+                
+                showToast(`Event "${eventTitle}" deleted by admin`);
+                loadEventsFromFirebase();
+            } catch (error) {
+                console.error('Error deleting event:', error);
+                showToast('Failed to delete event. Please try again.', 'error');
+            }
+        }
         function previousMonth() {
             currentDate.setMonth(currentDate.getMonth() - 1);
             renderCalendar();
