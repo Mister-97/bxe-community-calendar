@@ -1089,5 +1089,214 @@
                     </div>
                     
                     <!-- Terms Section Properly Contained -->
-                    <div class="terms-section">
-                        <h4 style="color: #ffd700; margin-bottom: 15px;">Terms and Community Agreement</h4>
+<div class="terms-section">
+  <h4 style="color:#ffd700; margin-bottom:15px;">Terms and Community Agreement</h4>
+  <div class="terms-checkbox">
+    <input type="checkbox" id="agreeTerms" required>
+    <label for="agreeTerms" class="terms-text">
+      I agree to the <a href="https://bxellc.com/terms--conditions" target="_blank">Terms of Service</a> and
+      <a href="https://bxellc.com/privacy-policy" target="_blank">Privacy Policy</a>. I understand my events may be moderated or removed if they violate guidelines.
+    </label>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-cancel" onclick="closeOnboardingModal()">Cancel</button>
+  <button type="submit" class="btn btn-primary">Save Profile</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+
+<!-- Basic Event View/Create Modal (placeholder) -->
+<div id="eventModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title" id="eventModalTitle">Create Event</div>
+      <button class="close-btn" onclick="closeEventModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="eventForm" onsubmit="handleEventSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input id="eventTitle" class="form-input" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Start Date *</label>
+            <input id="eventStart" type="date" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">End Date</label>
+            <input id="eventEnd" type="date" class="form-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input id="eventLocation" class="form-input" placeholder="Venue or address">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="eventDesc" class="form-textarea" placeholder="What’s this event about?"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Image</label>
+          <label class="upload-area" id="uploadArea">
+            <input id="eventImage" type="file" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
+            <span id="uploadPrompt">Click to upload (JPG/PNG)</span>
+            <img id="eventImagePreview" class="image-preview" style="display:none">
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-cancel" onclick="closeEventModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="success-toast">Saved!</div>
+
+<script>
+/** ---------- CONFIG FIXES ---------- **/
+/* IMPORTANT: Use your actual default storage bucket. For most projects:
+   storageBucket: "bxe-community-calendar.appspot.com"
+*/
+firebase.app().options.storageBucket = "bxe-community-calendar.appspot.com";
+
+/** ---------- STATE ---------- **/
+let current = new Date();
+let authMode = "login"; // or "signup"
+let selectedDate = null;
+let currentUser = null;
+
+/** ---------- DOM HELPERS ---------- **/
+const $ = (id) => document.getElementById(id);
+function show(el) { el.classList.add('show'); }
+function hide(el) { el.classList.remove('show'); }
+function toast(msg, ok=true) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.toggle('error-toast', !ok);
+  show(t);
+  setTimeout(()=> hide(t), 2000);
+}
+
+/** ---------- AUTH UI ---------- **/
+function openAuthModal() { $('authModal').classList.add('show'); }
+function closeAuthModal() { $('authModal').classList.remove('show'); }
+function toggleAuthMode() {
+  authMode = (authMode === 'login') ? 'signup' : 'login';
+  $('authModalTitle').textContent = authMode === 'login' ? 'Log In' : 'Sign Up';
+  $('authSubmitBtn').textContent = authMode === 'login' ? 'Log In' : 'Create Account';
+  $('authToggleText').textContent = authMode === 'login' ? "Don't have an account?" : "Already have an account?";
+  $('authToggleLink').textContent = authMode === 'login' ? "Sign up" : "Log in";
+}
+function handleAuthButtonClick() {
+  if (auth.currentUser) { // already logged in -> open create event modal
+    openEventModal();
+  } else {
+    openAuthModal();
+  }
+}
+async function handleAuthSubmit(e) {
+  e.preventDefault();
+  const email = $('authEmail').value.trim();
+  const pass = $('authPassword').value;
+  try {
+    if (authMode === 'login') {
+      await auth.signInWithEmailAndPassword(email, pass);
+    } else {
+      await auth.createUserWithEmailAndPassword(email, pass);
+      // new users -> onboarding
+      closeAuthModal();
+      openOnboardingModal();
+      return;
+    }
+    closeAuthModal();
+    toast('Signed in');
+  } catch (err) {
+    toast(err.message, false);
+  }
+}
+async function signInWithGoogle() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithPopup(provider);
+    closeAuthModal();
+    // If brand new user, show onboarding
+    const profile = await db.collection('profiles').doc(auth.currentUser.uid).get();
+    if (!profile.exists) openOnboardingModal();
+    toast('Signed in with Google');
+  } catch (err) {
+    toast(err.message, false);
+  }
+}
+async function logout() {
+  await auth.signOut();
+  toast('Signed out');
+}
+
+/** ---------- ONBOARDING ---------- **/
+function openOnboardingModal(){ $('onboardingModal').classList.add('show'); }
+function closeOnboardingModal(){ $('onboardingModal').classList.remove('show'); }
+async function handleOnboardingSubmit(e){
+  e.preventDefault();
+  const uid = auth.currentUser?.uid;
+  if (!uid) return toast('Please sign in first', false);
+  const data = {
+    fullName: $('fullName').value.trim(),
+    phone: $('phoneNumber').value.trim(),
+    contactEmail: $('contactEmail').value.trim(),
+    company: $('companyName').value.trim(),
+    agreed: $('agreeTerms').checked,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  if (!data.agreed) return toast('You must agree to the terms.', false);
+  try {
+    await db.collection('profiles').doc(uid).set(data, { merge: true });
+    closeOnboardingModal();
+    toast('Profile saved');
+  } catch (e) {
+    toast(e.message, false);
+  }
+}
+
+/** ---------- CALENDAR ---------- **/
+function monthLabel(d){
+  return d.toLocaleString(undefined, { month:'long', year:'numeric' });
+}
+function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+function endOfMonth(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0); }
+function previousMonth(){
+  current = new Date(current.getFullYear(), current.getMonth()-1, 1);
+  renderCalendar();
+}
+function nextMonth(){
+  current = new Date(current.getFullYear(), current.getMonth()+1, 1);
+  renderCalendar();
+}
+function goToToday(){
+  current = new Date();
+  renderCalendar();
+}
+function dayCell(date, other=false){
+  const div = document.createElement('div');
+  div.className = 'calendar-day' + (other ? ' other-month' : '');
+  const today = new Date();
+  const isToday = date.toDateString() === today.toDateString();
+  if (isToday) div.classList.add('today');
+  div.dataset.date = date.toISOString().slice(0,10);
+  const num = document.createElement('div');
+  num.className = 'day-number';
+  num.textContent = date.getDate();
+  const evts = document.createElement('div');
+  evts.className = 'events';
+  div.appendChild(num);
+  div.appendChild(evts);
+  div.addEventListener('click', () => {
+    selectedDate = div.dataset.date
+
