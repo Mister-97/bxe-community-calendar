@@ -1229,12 +1229,15 @@
         function updateAuthUI(isAuthenticated) {
             const userInfo = document.getElementById('userInfo');
             const userName = document.getElementById('userName');
+            const privacyLink = document.getElementById('privacyLink');
             
             if (isAuthenticated && userProfile) {
                 userInfo.style.display = 'flex';
                 userName.innerHTML = userProfile.full_name + (isAdmin ? '<span class="admin-badge">ADMIN</span>' : '');
+                privacyLink.style.display = 'inline-block';
             } else {
                 userInfo.style.display = 'none';
+                privacyLink.style.display = 'none';
             }
         }
 
@@ -1907,6 +1910,46 @@
             events_per_week: 50
         };
 
+        // Track rate limits in Firestore
+        async function updateRateLimitTracking() {
+            if (!currentUser) return;
+            
+            const now = new Date();
+            const today = now.toDateString();
+            
+            try {
+                const rateLimitRef = db.collection('rate_limits').doc(currentUser.uid);
+                const rateLimitDoc = await rateLimitRef.get();
+                
+                if (rateLimitDoc.exists) {
+                    const data = rateLimitDoc.data();
+                    const lastCreated = data.last_event_created.toDate().toDateString();
+                    const isNewDay = lastCreated !== today;
+                    
+                    // Calculate new week count (reset weekly on Sunday)
+                    const lastCreatedDate = data.last_event_created.toDate();
+                    const daysSinceLastEvent = Math.floor((now - lastCreatedDate) / (1000 * 60 * 60 * 24));
+                    const isNewWeek = daysSinceLastEvent >= 7 || 
+                        (now.getDay() === 0 && lastCreatedDate.getDay() !== 0); // Sunday reset
+                    
+                    await rateLimitRef.update({
+                        last_event_created: firebase.firestore.FieldValue.serverTimestamp(),
+                        events_today: isNewDay ? 1 : data.events_today + 1,
+                        events_this_week: isNewWeek ? 1 : data.events_this_week + 1
+                    });
+                } else {
+                    await rateLimitRef.set({
+                        user_id: currentUser.uid,
+                        last_event_created: firebase.firestore.FieldValue.serverTimestamp(),
+                        events_today: 1,
+                        events_this_week: 1
+                    });
+                }
+            } catch (error) {
+                console.error('Error updating rate limit tracking:', error);
+            }
+        }
+
         // Check rate limits before allowing event creation
         async function checkRateLimits(userId) {
             try {
@@ -1990,6 +2033,8 @@
                     showToast('Event updated successfully!');
                 } else {
                     await db.collection('events').add(eventData);
+                    // Update rate limiting tracking after successful event creation
+                    await updateRateLimitTracking();
                     showToast('Event created successfully!');
                 }
                 
@@ -1999,6 +2044,8 @@
                 console.error('Error saving event:', error);
                 if (error.message.includes('Rate limit exceeded')) {
                     showToast(error.message, 'error');
+                } else if (error.code === 'permission-denied') {
+                    showToast('Rate limit exceeded. Please wait before creating another event.', 'error');
                 } else {
                     showToast('Failed to save event. Please try again.', 'error');
                 }
