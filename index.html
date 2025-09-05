@@ -1444,13 +1444,16 @@
             }
         }
 
-       <script>
-// Replace your handleAuthButtonClick with this
-function handleAuthButtonClick() {
-  if (!currentUser) return openAuthModal();
-  if (!userProfile) return openOnboardingModal(); // always go to the profile box
-  openEventModal();
-}
+        function handleAuthButtonClick() {
+            if (!currentUser) {
+                openAuthModal();
+            } else if (!userProfile) {
+                openOnboardingModal();
+            } else {
+                openEventModal();
+            }
+        }
+
         // Auth modal functions
         function openAuthModal() {
             document.getElementById('authModal').classList.add('show');
@@ -1535,43 +1538,23 @@ function handleAuthButtonClick() {
         }
 
         // Onboarding modal functions
-      function openOnboardingModal() {
-  // close any other modal that might be visible
-  document.getElementById('authModal')?.classList.remove('show');
-  document.getElementById('eventModal')?.classList.remove('show');
-  document.getElementById('eventPreviewModal')?.classList.remove('show');
+        function openOnboardingModal() {
+            document.getElementById('onboardingModal').classList.add('show');
+            
+            if (currentUser) {
+                if (currentUser.displayName) {
+                    document.getElementById('fullName').value = currentUser.displayName;
+                }
+                if (currentUser.email) {
+                    document.getElementById('contactEmail').value = currentUser.email;
+                }
+            }
+        }
 
-  // optional: prefill fields
-  if (currentUser) {
-    if (currentUser.displayName) document.getElementById('fullName').value = currentUser.displayName;
-    if (currentUser.email) document.getElementById('contactEmail').value = currentUser.email;
-  }
-
-  document.getElementById('onboardingModal').classList.add('show');
-  document.body.style.overflow = 'hidden'; // prevent background scroll
-}
-
-function closeOnboardingModal() {
-  document.getElementById('onboardingModal').classList.remove('show');
-  document.body.style.overflow = '';
-  document.getElementById('onboardingForm').reset();
-}
-      try {
-  if (isSignUpMode) {
-    await auth.createUserWithEmailAndPassword(email, password);
-  } else {
-    await auth.signInWithEmailAndPassword(email, password);
-  }
-
-  await checkUserProfile();     // <- know whether they need onboarding
-  closeAuthModal();
-  if (!userProfile) openOnboardingModal();  // <- route straight into the profile box
-
-  showToast(isSignUpMode ? 'Account created successfully!' : 'Logged in successfully!');
-} catch (error) {
-  // ...
-}
-</script>
+        function closeOnboardingModal() {
+            document.getElementById('onboardingModal').classList.remove('show');
+            document.getElementById('onboardingForm').reset();
+        }
 
         async function handleOnboardingSubmit(event) {
             event.preventDefault();
