@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BXE Community Calendar</title>
+    <title>The Black Experience Community Calendar</title>
     
     <!-- Firebase CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <script>
-        // Initialize Firebase immediately after loading
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAQQwmtpr17jHgx73ux6TaaXRJgwPqTTSM",
             authDomain: "bxe-community-calendar.firebaseapp.com",
@@ -25,6 +26,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const storage = firebase.storage();
+        const auth = firebase.auth();
     </script>
     
     <style>
@@ -64,6 +66,20 @@
             color: #ffd700;
         }
 
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #b0b0b0;
+            font-size: 14px;
+        }
+
         .calendar-container {
             background: #2d2d2d;
             border-radius: 12px;
@@ -87,9 +103,9 @@
         }
 
         .nav-btn {
-            background: rgba(26,26,26,0.2);
+            background: #6c757d;
             border: none;
-            color: #1a1a1a;
+            color: white;
             font-size: 18px;
             padding: 8px 12px;
             border-radius: 6px;
@@ -98,7 +114,7 @@
         }
 
         .nav-btn:hover {
-            background: rgba(26,26,26,0.3);
+            background: #5a6268;
         }
 
         .month-year {
@@ -130,13 +146,33 @@
             background: #ff5252;
         }
 
-        .btn-secondary {
-            background: rgba(26,26,26,0.2);
-            color: #1a1a1a;
+        .header .btn-secondary {
+            background: #6c757d;
+            color: white;
         }
 
-        .btn-secondary:hover {
-            background: rgba(26,26,26,0.3);
+        .header .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-auth {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-auth:hover {
+            background: #218838;
+        }
+
+        .btn-logout {
+            background: #6c757d;
+            color: white;
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+
+        .btn-logout:hover {
+            background: #5a6268;
         }
 
         .calendar-grid {
@@ -349,31 +385,95 @@
             background: #777;
         }
 
-        .upload-area {
-            border: 2px dashed #666;
-            border-radius: 8px;
-            padding: 30px;
+        /* Auth Modal Styles */
+        .auth-modal .modal-content {
+            max-width: 400px;
+        }
+
+        .auth-toggle {
             text-align: center;
-            background: #3a3a3a;
+            margin-bottom: 20px;
+        }
+
+        .toggle-link {
+            color: #ffd700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            text-decoration: underline;
         }
 
-        .upload-area:hover {
-            border-color: #ffd700;
+        .toggle-link:hover {
+            color: #e6c200;
         }
 
-        .upload-area.has-image {
-            padding: 0;
-            border: none;
-            background: transparent;
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            color: #888;
         }
 
-        .image-preview {
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #404040;
+        }
+
+        .divider span {
+            background: #2d2d2d;
+            padding: 0 15px;
+        }
+
+        .google-btn {
             width: 100%;
-            max-height: 200px;
-            object-fit: cover;
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px;
             border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .google-btn:hover {
+            background: #357ae8;
+        }
+
+        /* Onboarding Styles */
+        .onboarding-modal .modal-content {
+            max-width: 500px;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .terms-checkbox input[type="checkbox"] {
+            margin-top: 3px;
+        }
+
+        .terms-text {
+            font-size: 13px;
+            color: #b0b0b0;
+            line-height: 1.4;
+        }
+
+        .char-counter {
+            font-size: 12px;
+            color: #888;
+            text-align: right;
+            margin-top: 4px;
         }
 
         /* Sidebar */
@@ -445,6 +545,11 @@
             color: #ffd700;
         }
 
+        .upcoming-event-creator {
+            font-size: 11px;
+            color: #888;
+        }
+
         .upcoming-event-image {
             width: 50px;
             height: 50px;
@@ -459,186 +564,6 @@
             color: #888;
         }
 
-        /* Preview Modal */
-        .preview-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1500;
-        }
-
-        .preview-modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .preview-content {
-            background: #2d2d2d;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .preview-header {
-            padding: 20px;
-            border-bottom: 1px solid #404040;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .preview-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #e0e6ed;
-            flex: 1;
-        }
-
-        .preview-menu {
-            position: relative;
-            margin: 0 10px;
-        }
-
-        .menu-dots {
-            background: none;
-            border: none;
-            font-size: 20px;
-            color: #b0b0b0;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 6px;
-        }
-
-        .menu-dots:hover {
-            background: #404040;
-            color: #ffd700;
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: #3a3a3a;
-            border: 1px solid #404040;
-            border-radius: 8px;
-            min-width: 180px;
-            z-index: 1000;
-            display: none;
-        }
-
-        .dropdown-menu.show {
-            display: block;
-        }
-
-        .dropdown-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            color: #e0e6ed;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .dropdown-item:hover {
-            background: #404040;
-        }
-
-        .dropdown-item.delete:hover {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .preview-body {
-            padding: 20px;
-        }
-
-        .preview-field {
-            display: flex;
-            margin-bottom: 15px;
-            gap: 10px;
-        }
-
-        .preview-icon {
-            font-size: 18px;
-            width: 24px;
-        }
-
-        .preview-label {
-            font-weight: 600;
-            color: #e0e6ed;
-            min-width: 80px;
-        }
-
-        .preview-value {
-            color: #b0b0b0;
-            flex: 1;
-        }
-
-        .preview-image {
-            width: 100%;
-            max-height: 250px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .preview-footer {
-            padding: 20px;
-            border-top: 1px solid #404040;
-            text-align: center;
-        }
-
-        /* Delete Modal */
-        .delete-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 2000;
-        }
-
-        .delete-modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .delete-content {
-            background: #2d2d2d;
-            padding: 30px;
-            border-radius: 12px;
-            text-align: center;
-            max-width: 400px;
-        }
-
-        .delete-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .btn-danger {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #ff5252;
-        }
-
-        /* Success message */
         .success-toast {
             position: fixed;
             top: 20px;
@@ -658,169 +583,26 @@
             transform: translateX(0);
         }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
+        .error-toast {
+            background: #dc3545;
+        }
 
+        @media (max-width: 768px) {
             .header {
-                padding: 15px;
                 flex-direction: column;
-                gap: 10px;
+                gap: 15px;
                 text-align: center;
             }
 
-            .logo {
-                font-size: 20px;
-            }
-
-            .calendar-header {
-                padding: 15px;
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .calendar-nav {
-                gap: 15px;
-            }
-
-            .month-year {
-                font-size: 20px;
-            }
-
-            .controls {
+            .header-controls {
                 width: 100%;
                 justify-content: center;
+                flex-wrap: wrap;
             }
 
-            .btn {
-                padding: 10px 16px;
-                font-size: 14px;
-            }
-
-            .calendar-day {
-                min-height: 70px;
-                padding: 5px;
-                font-size: 12px;
-            }
-
-            .day-number {
-                margin-bottom: 3px;
-                font-size: 12px;
-            }
-
-            .event {
-                font-size: 10px;
-                padding: 2px 4px;
-                margin-bottom: 1px;
-            }
-
-            .sidebar {
-                margin-top: 15px;
-                padding: 15px;
-            }
-
-            .upcoming-event {
-                padding: 10px;
-                flex-direction: column;
-                gap: 8px;
-                align-items: stretch;
-            }
-
-            .upcoming-event-image {
-                width: 100%;
-                height: 120px;
+            .user-info {
                 order: -1;
-            }
-
-            .upcoming-event-content {
-                text-align: center;
-            }
-
-            .modal-content {
-                width: 95%;
-                margin: 10px;
-                max-height: 85vh;
-            }
-
-            .modal-header, .modal-body, .modal-footer {
-                padding: 15px;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-
-            .form-group {
-                margin-bottom: 15px;
-            }
-
-            .form-input, .form-select, .form-textarea {
-                padding: 10px;
-                font-size: 16px; /* Prevents zoom on iOS */
-            }
-
-            .upload-area {
-                padding: 20px;
-            }
-
-            .preview-content {
-                width: 95%;
-                margin: 10px;
-                max-height: 85vh;
-            }
-
-            .preview-header {
-                padding: 15px;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-
-            .preview-menu {
-                margin: 0;
-                align-self: flex-end;
-            }
-
-            .preview-title {
-                font-size: 20px;
-                width: 100%;
-            }
-
-            .preview-body {
-                padding: 15px;
-            }
-
-            .preview-field {
-                flex-direction: column;
-                gap: 5px;
-                margin-bottom: 12px;
-            }
-
-            .preview-label {
-                min-width: auto;
-                font-size: 14px;
-            }
-
-            .preview-icon {
-                display: none;
-            }
-
-            .delete-content {
-                padding: 20px;
-                margin: 20px;
-            }
-
-            .search-input {
-                font-size: 16px; /* Prevents zoom on iOS */
-                padding: 12px;
-            }
-
-            .success-toast {
-                right: 10px;
-                left: 10px;
-                top: 10px;
+                justify-content: center;
             }
         }
     </style>
@@ -830,8 +612,13 @@
         <!-- Header -->
         <div class="header">
             <div class="logo">BXE Community Calendar</div>
-            <div>
+            <div class="header-controls">
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <span id="userName"></span>
+                    <button class="btn btn-logout" onclick="logout()">Logout</button>
+                </div>
                 <button class="btn btn-secondary" onclick="showHelp()">Help</button>
+                <button class="btn btn-auth" id="authButton" onclick="handleAuthButtonClick()">Log in to post</button>
             </div>
         </div>
 
@@ -840,12 +627,11 @@
             <div class="calendar-header">
                 <div class="calendar-nav">
                     <button class="nav-btn" onclick="previousMonth()">‹</button>
-                    <div class="month-year" id="monthYear">August 2025</div>
+                    <div class="month-year" id="monthYear">September 2025</div>
                     <button class="nav-btn" onclick="nextMonth()">›</button>
                 </div>
                 <div class="controls">
                     <button class="btn btn-secondary" onclick="goToToday()">Today</button>
-                    <button class="btn btn-primary" onclick="openAddEventModal()">+ Add Event</button>
                 </div>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
@@ -860,53 +646,136 @@
             <div id="upcomingEvents">
                 <div class="no-events">
                     <p>📅 No upcoming events</p>
-                    <p style="font-size: 12px;">Create your first event!</p>
+                    <p style="font-size: 12px;">Be the first to create an event!</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Add/Edit Event Modal -->
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal auth-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="authModalTitle">Log In</div>
+                <button class="close-btn" onclick="closeAuthModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-toggle">
+                    <span id="authToggleText">Don't have an account?</span>
+                    <span class="toggle-link" id="authToggleLink" onclick="toggleAuthMode()">Sign up</span>
+                </div>
+                
+                <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="authEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" id="authPassword" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" id="authSubmitBtn">Log In</button>
+                </form>
+                
+                <div class="divider">
+                    <span>or</span>
+                </div>
+                
+                <button class="google-btn" onclick="signInWithGoogle()">
+                    <span>🔐</span>
+                    Continue with Google
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding Modal -->
+    <div id="onboardingModal" class="modal onboarding-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Complete Your Profile</div>
+            </div>
+            <div class="modal-body">
+                <form id="onboardingForm" onsubmit="handleOnboardingSubmit(event)">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" id="fullName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Organization Name</label>
+                        <input type="text" class="form-input" id="orgName" placeholder="Optional">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Role *</label>
+                        <select class="form-select" id="role" required>
+                            <option value="">Select your role...</option>
+                            <option value="community">Community Member</option>
+                            <option value="organizer">Organizer</option>
+                            <option value="business">Business</option>
+                            <option value="nonprofit">Nonprofit</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">City</label>
+                        <input type="text" class="form-input" id="city" placeholder="Optional">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Short Bio</label>
+                        <textarea class="form-textarea" id="shortBio" placeholder="Tell us a bit about yourself (max 200 characters)" maxlength="200"></textarea>
+                        <div class="char-counter" id="bioCounter">0/200</div>
+                    </div>
+                    
+                    <div class="terms-checkbox">
+                        <input type="checkbox" id="termsCheckbox" required>
+                        <label for="termsCheckbox" class="terms-text">
+                            I agree to the terms of service and community guidelines for this calendar platform.
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;" id="onboardingSubmitBtn">
+                        Complete Setup
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Modal -->
     <div id="eventModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="modalTitle">Add New Event</div>
+                <div class="modal-title" id="modalTitle">Create Event</div>
                 <button class="close-btn" onclick="closeEventModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Event Title *</label>
-                    <input type="text" class="form-input" id="eventTitle" placeholder="Enter event title">
+                    <input type="text" class="form-input" id="eventTitle" placeholder="Enter event title" required>
                     <div class="error-message" id="titleError">Please enter an event title</div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Start Date & Time *</label>
-                        <input type="datetime-local" class="form-input" id="startDate">
+                        <input type="datetime-local" class="form-input" id="startDate" required>
                         <div class="error-message" id="startError">Please select a start date</div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">End Date & Time *</label>
-                        <input type="datetime-local" class="form-input" id="endDate">
+                        <input type="datetime-local" class="form-input" id="endDate" required>
                         <div class="error-message" id="endError">Please select an end date</div>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Location</label>
-                    <select class="form-select" id="location">
-                        <option value="">Select location...</option>
-                        <option value="online">Online</option>
-                        <option value="office">Office</option>
-                        <option value="conference-room">Conference Room</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Address</label>
-                    <input type="text" class="form-input" id="address" placeholder="Enter event address">
+                    <input type="text" class="form-input" id="location" placeholder="Event location">
                 </div>
 
                 <div class="form-group">
@@ -915,90 +784,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Event Image</label>
-                    <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
-                        <div id="uploadText">
-                            <div style="font-size: 24px; margin-bottom: 8px;">📷</div>
-                            <div>Click to upload image</div>
-                            <div style="font-size: 12px; color: #888; margin-top: 4px;">PNG, JPG up to 5MB</div>
-                        </div>
-                        <div id="imagePreview" style="display: none;"></div>
-                    </div>
-                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                    <label class="form-label">Created by</label>
+                    <input type="text" class="form-input" id="createdByName" readonly style="background: #222; color: #888;">
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-cancel" onclick="closeEventModal()">Cancel</button>
-                <button class="btn btn-primary" id="saveEventBtn" onclick="saveEvent()">Save Event</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Event Preview Modal -->
-    <div id="previewModal" class="preview-modal">
-        <div class="preview-content">
-            <div class="preview-header">
-                <div class="preview-title" id="previewTitle">Event Details</div>
-                <div class="preview-menu">
-                    <button class="menu-dots" onclick="toggleDropdown()">⋯</button>
-                    <div class="dropdown-menu" id="dropdownMenu">
-                        <div class="dropdown-item" onclick="editCurrentEvent()">
-                            ✏️ Edit Event
-                        </div>
-                        <div class="dropdown-item delete" onclick="deleteFromPreview()">
-                            🗑️ Delete this event
-                        </div>
-                    </div>
-                </div>
-                <button class="close-btn" onclick="closePreviewModal()">&times;</button>
-            </div>
-            <div class="preview-body">
-                <div id="previewImageContainer"></div>
-                
-                <div class="preview-field">
-                    <div class="preview-icon">📅</div>
-                    <div class="preview-label">Start:</div>
-                    <div class="preview-value" id="previewStart"></div>
-                </div>
-                
-                <div class="preview-field">
-                    <div class="preview-icon">🏁</div>
-                    <div class="preview-label">End:</div>
-                    <div class="preview-value" id="previewEnd"></div>
-                </div>
-                
-                <div class="preview-field" id="previewLocationField">
-                    <div class="preview-icon">📍</div>
-                    <div class="preview-label">Location:</div>
-                    <div class="preview-value" id="previewLocation"></div>
-                </div>
-                
-                <div class="preview-field" id="previewAddressField">
-                    <div class="preview-icon">🏠</div>
-                    <div class="preview-label">Address:</div>
-                    <div class="preview-value" id="previewAddress"></div>
-                </div>
-                
-                <div class="preview-field" id="previewDescField">
-                    <div class="preview-icon">📝</div>
-                    <div class="preview-label">Description:</div>
-                    <div class="preview-value" id="previewDesc"></div>
-                </div>
-            </div>
-            <div class="preview-footer">
-                <button class="btn btn-cancel" onclick="closePreviewModal()">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="delete-modal">
-        <div class="delete-content">
-            <h3 style="color: #e0e6ed; margin-bottom: 15px;">Delete Event</h3>
-            <p style="color: #b0b0b0; margin-bottom: 20px;">Are you sure you want to delete this event?</p>
-            <div class="delete-buttons">
-                <button class="btn btn-cancel" onclick="closeDeleteModal()">Cancel</button>
-                <button class="btn btn-danger" onclick="confirmDeleteEvent()">Delete</button>
+                <button class="btn btn-primary" id="saveEventBtn" onclick="saveEvent()">Create Event</button>
             </div>
         </div>
     </div>
@@ -1006,12 +798,11 @@
     <script>
         // Global variables
         let events = [];
-        let currentDate = new Date(2025, 7, 1); // August 2025
-        let today = new Date(2025, 7, 24); // August 24, 2025
-        let selectedEventId = null;
-        let editingEventId = null;
-        let eventToDelete = null;
-        let uploadedImage = null;
+        let currentDate = new Date(2025, 8, 1); // September 2025
+        let today = new Date();
+        let currentUser = null;
+        let userProfile = null;
+        let isSignUpMode = false;
         let currentSearchQuery = '';
 
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -1019,27 +810,239 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            loadEventsFromFirebase();
-            setupImageUpload();
+            setupAuthStateListener();
             setupEventListeners();
             setupSearch();
+            loadEventsFromFirebase();
         });
 
-        // Load events from Firebase
-        function loadEventsFromFirebase() {
-            db.collection('events').get().then((querySnapshot) => {
-                events = [];
-                querySnapshot.forEach((doc) => {
-                    events.push({ id: doc.id, ...doc.data() });
-                });
-                renderCalendar();
-                updateUpcomingEvents();
-            }).catch((error) => {
-                console.error("Error loading events: ", error);
+        // Auth state listener
+        function setupAuthStateListener() {
+            auth.onAuthStateChanged(async (user) => {
+                currentUser = user;
+                
+                if (user) {
+                    // User is signed in
+                    await checkUserProfile();
+                    updateAuthUI(true);
+                } else {
+                    // User is signed out
+                    userProfile = null;
+                    updateAuthUI(false);
+                }
+                
                 renderCalendar();
                 updateUpcomingEvents();
             });
         }
+
+        // Check if user has profile
+        async function checkUserProfile() {
+            if (!currentUser) return;
+            
+            try {
+                const profileDoc = await db.collection('profiles').doc(currentUser.uid).get();
+                
+                if (profileDoc.exists) {
+                    userProfile = profileDoc.data();
+                    updateAuthButton('authenticated');
+                } else {
+                    userProfile = null;
+                    updateAuthButton('needs_onboarding');
+                }
+            } catch (error) {
+                console.error('Error checking user profile:', error);
+                userProfile = null;
+                updateAuthButton('needs_onboarding');
+            }
+        }
+
+        // Update auth UI
+        function updateAuthUI(isAuthenticated) {
+            const userInfo = document.getElementById('userInfo');
+            const userName = document.getElementById('userName');
+            
+            if (isAuthenticated && userProfile) {
+                userInfo.style.display = 'flex';
+                userName.textContent = userProfile.full_name;
+            } else {
+                userInfo.style.display = 'none';
+            }
+        }
+
+        // Update auth button
+        function updateAuthButton(state) {
+            const authButton = document.getElementById('authButton');
+            
+            switch (state) {
+                case 'unauthenticated':
+                    authButton.textContent = 'Log in to post';
+                    authButton.className = 'btn btn-auth';
+                    break;
+                case 'needs_onboarding':
+                    authButton.textContent = 'Finish setup';
+                    authButton.className = 'btn btn-primary';
+                    break;
+                case 'authenticated':
+                    authButton.textContent = 'Post an event';
+                    authButton.className = 'btn btn-primary';
+                    break;
+            }
+        }
+
+        // Handle auth button click
+        function handleAuthButtonClick() {
+            if (!currentUser) {
+                openAuthModal();
+            } else if (!userProfile) {
+                openOnboardingModal();
+            } else {
+                openEventModal();
+            }
+        }
+
+        // Auth modal functions
+        function openAuthModal() {
+            document.getElementById('authModal').classList.add('show');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('show');
+            document.getElementById('authForm').reset();
+        }
+
+        function toggleAuthMode() {
+            isSignUpMode = !isSignUpMode;
+            
+            const title = document.getElementById('authModalTitle');
+            const toggleText = document.getElementById('authToggleText');
+            const toggleLink = document.getElementById('authToggleLink');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            
+            if (isSignUpMode) {
+                title.textContent = 'Sign Up';
+                toggleText.textContent = 'Already have an account?';
+                toggleLink.textContent = 'Log in';
+                submitBtn.textContent = 'Sign Up';
+            } else {
+                title.textContent = 'Log In';
+                toggleText.textContent = "Don't have an account?";
+                toggleLink.textContent = 'Sign up';
+                submitBtn.textContent = 'Log In';
+            }
+        }
+
+        // Handle auth form submit
+        async function handleAuthSubmit(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const submitBtn = document.getElementById('authSubmitBtn');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = isSignUpMode ? 'Signing up...' : 'Logging in...';
+            
+            try {
+                if (isSignUpMode) {
+                    await auth.createUserWithEmailAndPassword(email, password);
+                } else {
+                    await auth.signInWithEmailAndPassword(email, password);
+                }
+                
+                closeAuthModal();
+                showToast(isSignUpMode ? 'Account created successfully!' : 'Logged in successfully!');
+            } catch (error) {
+                console.error('Auth error:', error);
+                showToast(error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = isSignUpMode ? 'Sign Up' : 'Log In';
+            }
+        }
+
+        // Sign in with Google
+        async function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            try {
+                await auth.signInWithPopup(provider);
+                closeAuthModal();
+                showToast('Logged in with Google successfully!');
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                showToast(error.message, 'error');
+            }
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                await auth.signOut();
+                showToast('Logged out successfully!');
+                updateAuthButton('unauthenticated');
+            } catch (error) {
+                console.error('Logout error:', error);
+                showToast(error.message, 'error');
+            }
+        }
+
+        // Onboarding modal functions
+        function openOnboardingModal() {
+            document.getElementById('onboardingModal').classList.add('show');
+            
+            // Pre-fill name from Google if available
+            if (currentUser && currentUser.displayName) {
+                document.getElementById('fullName').value = currentUser.displayName;
+            }
+        }
+
+        function closeOnboardingModal() {
+            document.getElementById('onboardingModal').classList.remove('show');
+            document.getElementById('onboardingForm').reset();
+            document.getElementById('bioCounter').textContent = '0/200';
+        }
+
+        // Handle onboarding form submit
+        async function handleOnboardingSubmit(event) {
+            event.preventDefault();
+            
+            if (!currentUser) return;
+            
+            const submitBtn = document.getElementById('onboardingSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating profile...';
+            
+            const profileData = {
+                uid: currentUser.uid,
+                full_name: document.getElementById('fullName').value.trim(),
+                org_name: document.getElementById('orgName').value.trim() || null,
+                role: document.getElementById('role').value,
+                city: document.getElementById('city').value.trim() || null,
+                short_bio: document.getElementById('shortBio').value.trim(),
+                created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            try {
+                await db.collection('profiles').doc(currentUser.uid).set(profileData);
+                userProfile = profileData;
+                
+                closeOnboardingModal();
+                updateAuthButton('authenticated');
+                updateAuthUI(true);
+                showToast('Profile created successfully!');
+            } catch (error) {
+                console.error('Error creating profile:', error);
+                showToast('Failed to create profile. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Complete Setup';
+            }
+        }
+
+        // Setup bio counter (removed since bio field was removed)
+        // No longer needed
 
         // Setup search
         function setupSearch() {
@@ -1055,71 +1058,31 @@
             // Close modals when clicking outside
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('modal')) {
-                    closeEventModal();
-                }
-                if (e.target.classList.contains('preview-modal')) {
-                    closePreviewModal();
-                }
-                if (e.target.classList.contains('delete-modal')) {
-                    closeDeleteModal();
+                    if (e.target.id === 'authModal') closeAuthModal();
+                    if (e.target.id === 'onboardingModal') closeOnboardingModal();
+                    if (e.target.id === 'eventModal') closeEventModal();
                 }
             });
         }
 
-        // Setup image upload
-        function setupImageUpload() {
-            const imageUpload = document.getElementById('imageUpload');
-            imageUpload.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                if (!file.type.startsWith('image/')) {
-                    showToast('Please select an image file', 'error');
-                    return;
-                }
-
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast('Image must be smaller than 5MB', 'error');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    uploadedImage = e.target.result;
-                    showImagePreview(e.target.result);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // Show image preview
-        function showImagePreview(imageSrc) {
-            const uploadArea = document.querySelector('.upload-area');
-            const uploadText = document.getElementById('uploadText');
-            const imagePreview = document.getElementById('imagePreview');
-
-            uploadArea.classList.add('has-image');
-            uploadText.style.display = 'none';
-            imagePreview.style.display = 'block';
-            imagePreview.innerHTML = `
-                <img src="${imageSrc}" class="image-preview" alt="Event image">
-                <div style="padding: 10px; color: #28a745; font-size: 14px;">✓ Image uploaded successfully</div>
-            `;
-        }
-
-        // Reset image upload
-        function resetImageUpload() {
-            const uploadArea = document.querySelector('.upload-area');
-            const uploadText = document.getElementById('uploadText');
-            const imagePreview = document.getElementById('imagePreview');
-            const imageUpload = document.getElementById('imageUpload');
-
-            uploadArea.classList.remove('has-image');
-            uploadText.style.display = 'block';
-            imagePreview.style.display = 'none';
-            imagePreview.innerHTML = '';
-            imageUpload.value = '';
-            uploadedImage = null;
+        // Load events from Firebase
+        function loadEventsFromFirebase() {
+            db.collection('events')
+                .orderBy('start', 'asc')
+                .get()
+                .then((querySnapshot) => {
+                    events = [];
+                    querySnapshot.forEach((doc) => {
+                        events.push({ id: doc.id, ...doc.data() });
+                    });
+                    renderCalendar();
+                    updateUpcomingEvents();
+                })
+                .catch((error) => {
+                    console.error("Error loading events: ", error);
+                    renderCalendar();
+                    updateUpcomingEvents();
+                });
         }
 
         // Render calendar
@@ -1165,11 +1128,11 @@
                     <div class="events"></div>
                 `;
 
-                // Click to add event
-                if (cellDate.getMonth() === currentDate.getMonth()) {
+                // Click to add event (only if authenticated and has profile)
+                if (cellDate.getMonth() === currentDate.getMonth() && currentUser && userProfile) {
                     dayCell.addEventListener('click', function(e) {
                         if (e.target === dayCell || e.target.classList.contains('day-number')) {
-                            openAddEventModal(cellDate);
+                            openEventModal(cellDate);
                         }
                     });
                 }
@@ -1182,32 +1145,9 @@
                     const eventElement = document.createElement('div');
                     eventElement.className = 'event';
                     eventElement.textContent = event.title;
-                    // Single click to preview
                     eventElement.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        if (!this.classList.contains('delete-mode')) {
-                            showEventPreview(event.id);
-                        }
-                    });
-
-                    // Double click for delete mode
-                    eventElement.addEventListener('dblclick', function(e) {
-                        e.stopPropagation();
-                        this.classList.add('delete-mode');
-                        
-                        setTimeout(() => {
-                            this.classList.remove('delete-mode');
-                        }, 3000);
-
-                        const deleteHandler = (clickEvent) => {
-                            if (this.classList.contains('delete-mode')) {
-                                clickEvent.stopPropagation();
-                                deleteEventDirectly(event.id);
-                                this.removeEventListener('click', deleteHandler);
-                            }
-                        };
-                        
-                        this.addEventListener('click', deleteHandler);
+                        showEventDetails(event);
                     });
 
                     eventsContainer.appendChild(eventElement);
@@ -1220,7 +1160,7 @@
         // Get events for specific day
         function getEventsForDay(date) {
             return events.filter(event => {
-                const eventDate = new Date(event.startDate);
+                const eventDate = new Date(event.start);
                 return isSameDay(eventDate, date);
             });
         }
@@ -1236,8 +1176,8 @@
         function updateUpcomingEvents() {
             const container = document.getElementById('upcomingEvents');
             let upcomingEvents = events
-                .filter(event => new Date(event.startDate) > today)
-                .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+                .filter(event => new Date(event.start) > today)
+                .sort((a, b) => new Date(a.start) - new Date(b.start));
 
             // Apply search filter
             if (currentSearchQuery) {
@@ -1246,18 +1186,16 @@
                     const title = (event.title || '').toLowerCase();
                     const description = (event.description || '').toLowerCase();
                     const location = (event.location || '').toLowerCase();
-                    const address = (event.address || '').toLowerCase();
                     
                     return title.includes(searchLower) ||
                            description.includes(searchLower) ||
-                           location.includes(searchLower) ||
-                           address.includes(searchLower);
+                           location.includes(searchLower);
                 });
                 
                 if (upcomingEvents.length === 0) {
                     container.innerHTML = `
                         <div class="no-events">
-                            <p>🔍 No events found</p>
+                            <p>No events found</p>
                             <p style="font-size: 12px;">Try a different search term</p>
                         </div>
                     `;
@@ -1270,31 +1208,27 @@
             if (upcomingEvents.length === 0) {
                 container.innerHTML = `
                     <div class="no-events">
-                        <p>📅 No upcoming events</p>
-                        <p style="font-size: 12px;">Create your first event!</p>
+                        <p>No upcoming events</p>
+                        <p style="font-size: 12px;">Be the first to create an event!</p>
                     </div>
                 `;
                 return;
             }
 
             container.innerHTML = upcomingEvents.map(event => {
-                const imageHtml = event.image 
-                    ? `<img src="${event.image}" class="upcoming-event-image" alt="${event.title}">`
-                    : '';
-                
                 return `
-                    <div class="upcoming-event" onclick="showEventPreview(${event.id})">
+                    <div class="upcoming-event" onclick="showEventDetails(${JSON.stringify(event).replace(/"/g, '&quot;')})">
                         <div class="upcoming-event-content">
                             <div class="upcoming-event-title">${event.title}</div>
-                            <div class="upcoming-event-date">${formatEventDate(event.startDate)}</div>
+                            <div class="upcoming-event-date">${formatEventDate(event.start)}</div>
+                            <div class="upcoming-event-creator">by ${event.created_by_name}</div>
                         </div>
-                        ${imageHtml}
                     </div>
                 `;
             }).join('');
         }
 
-        // Format event date
+        // Format event date (with timezone awareness)
         function formatEventDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString('en-US', {
@@ -1302,8 +1236,15 @@
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
+                timeZone: 'America/Chicago',
+                timeZoneName: 'short'
             });
+        }
+
+        // Show event details
+        function showEventDetails(event) {
+            alert(`Event: ${event.title}\n\nStart: ${formatEventDate(event.start)}\nEnd: ${formatEventDate(event.end)}\nLocation: ${event.location || 'No location specified'}\nCreated by: ${event.created_by_name}\n\nDescription:\n${event.description || 'No description'}`);
         }
 
         // Navigation functions
@@ -1322,14 +1263,15 @@
             renderCalendar();
         }
 
-        // Open add event modal
-        function openAddEventModal(selectedDate = null) {
-            editingEventId = null;
-            document.getElementById('modalTitle').textContent = 'Add New Event';
-            document.getElementById('saveEventBtn').textContent = 'Save Event';
+        // Event modal functions
+        function openEventModal(selectedDate = null) {
+            if (!currentUser || !userProfile) {
+                handleAuthButtonClick();
+                return;
+            }
             
-            // Reset form
-            clearForm();
+            // Pre-fill creator name
+            document.getElementById('createdByName').value = userProfile.full_name;
             
             // Set default dates if date selected
             if (selectedDate) {
@@ -1345,55 +1287,20 @@
             document.getElementById('eventModal').classList.add('show');
         }
 
-        // Open edit event modal
-        function openEditEventModal(eventId) {
-            const event = events.find(e => e.id === eventId);
-            if (!event) return;
-            
-            editingEventId = eventId;
-            document.getElementById('modalTitle').textContent = 'Edit Event';
-            document.getElementById('saveEventBtn').textContent = 'Update Event';
-            
-            // Fill form with event data
-            document.getElementById('eventTitle').value = event.title;
-            document.getElementById('startDate').value = event.startDate;
-            document.getElementById('endDate').value = event.endDate;
-            document.getElementById('location').value = event.location || '';
-            document.getElementById('address').value = event.address || '';
-            document.getElementById('description').value = event.description || '';
-            
-            // Handle image
-            if (event.image) {
-                uploadedImage = event.image;
-                showImagePreview(event.image);
-            } else {
-                resetImageUpload();
-            }
-            
-            document.getElementById('eventModal').classList.add('show');
-        }
-
-        // Close event modal
         function closeEventModal() {
             document.getElementById('eventModal').classList.remove('show');
-            clearForm();
-            clearErrors();
-            resetImageUpload();
-            editingEventId = null;
+            clearEventForm();
         }
 
-        // Clear form
-        function clearForm() {
+        function clearEventForm() {
             document.getElementById('eventTitle').value = '';
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
             document.getElementById('location').value = '';
-            document.getElementById('address').value = '';
             document.getElementById('description').value = '';
-        }
-
-        // Clear form errors
-        function clearErrors() {
+            document.getElementById('createdByName').value = '';
+            
+            // Clear errors
             const errorElements = document.querySelectorAll('.error-message');
             const inputElements = document.querySelectorAll('.form-input, .form-select, .form-textarea');
             
@@ -1401,30 +1308,78 @@
             inputElements.forEach(input => input.classList.remove('error'));
         }
 
-        // Validate form
-        function validateForm() {
-            clearErrors();
-            let isValid = true;
+        // Save event
+        async function saveEvent() {
+            if (!currentUser || !userProfile) {
+                showToast('You must be logged in to create events', 'error');
+                return;
+            }
 
+            if (!validateEventForm()) {
+                return;
+            }
+
+            const saveBtn = document.getElementById('saveEventBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Creating...';
+
+            const eventData = {
+                title: document.getElementById('eventTitle').value.trim(),
+                start: document.getElementById('startDate').value,
+                end: document.getElementById('endDate').value,
+                location: document.getElementById('location').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                created_by_uid: currentUser.uid,
+                created_by_name: userProfile.full_name,
+                status: 'public',
+                created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('events').add(eventData);
+                showToast('Event created successfully!');
+                loadEventsFromFirebase();
+                closeEventModal();
+            } catch (error) {
+                console.error('Error creating event:', error);
+                showToast('Failed to create event. Please try again.', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Create Event';
+            }
+        }
+
+        // Validate event form
+        function validateEventForm() {
+            let isValid = true;
+            
             const title = document.getElementById('eventTitle').value.trim();
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
 
+            // Clear previous errors
+            const errorElements = document.querySelectorAll('.error-message');
+            const inputElements = document.querySelectorAll('.form-input');
+            
+            errorElements.forEach(error => error.classList.remove('show'));
+            inputElements.forEach(input => input.classList.remove('error'));
+
             // Validate title
             if (!title) {
-                showError('eventTitle', 'titleError', 'Please enter an event title');
+                showFieldError('eventTitle', 'titleError', 'Please enter an event title');
                 isValid = false;
             }
 
             // Validate start date
             if (!startDate) {
-                showError('startDate', 'startError', 'Please select a start date');
+                showFieldError('startDate', 'startError', 'Please select a start date');
                 isValid = false;
             }
 
             // Validate end date
             if (!endDate) {
-                showError('endDate', 'endError', 'Please select an end date');
+                showFieldError('endDate', 'endError', 'Please select an end date');
                 isValid = false;
             }
 
@@ -1434,7 +1389,7 @@
                 const end = new Date(endDate);
                 
                 if (end <= start) {
-                    showError('endDate', 'endError', 'End date must be after start date');
+                    showFieldError('endDate', 'endError', 'End date must be after start date');
                     isValid = false;
                 }
             }
@@ -1443,187 +1398,13 @@
         }
 
         // Show field error
-        function showError(fieldId, errorId, message) {
+        function showFieldError(fieldId, errorId, message) {
             const field = document.getElementById(fieldId);
             const error = document.getElementById(errorId);
             
             field.classList.add('error');
             error.textContent = message;
             error.classList.add('show');
-        }
-
-        // Save event
-        function saveEvent() {
-            if (!validateForm()) {
-                return;
-            }
-
-            const eventData = {
-                title: document.getElementById('eventTitle').value.trim(),
-                startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value,
-                location: document.getElementById('location').value,
-                address: document.getElementById('address').value.trim(),
-                description: document.getElementById('description').value.trim(),
-                image: uploadedImage || null, // Store base64 directly in Firestore
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            // Show loading state
-            const saveBtn = document.getElementById('saveEventBtn');
-            const originalText = saveBtn.textContent;
-            saveBtn.textContent = 'Saving...';
-            saveBtn.disabled = true;
-
-            // Save event with image data directly to Firestore
-            saveEventToFirebase(eventData, originalText);
-        }
-
-        // Upload image to Firebase Storage
-        function uploadImageToFirebase(eventData, originalText) {
-            const imageRef = storage.ref().child('event-images/' + Date.now() + '.jpg');
-            
-            imageRef.putString(uploadedImage, 'data_url').then(() => {
-                return imageRef.getDownloadURL();
-            }).then((downloadURL) => {
-                eventData.image = downloadURL;
-                saveEventToFirebase(eventData, originalText);
-            }).catch((error) => {
-                console.error("Error uploading image: ", error);
-                showToast('Failed to upload image. Event saved without image.', 'warning');
-                saveEventToFirebase(eventData, originalText);
-            });
-        }
-
-        // Save event to Firestore
-        function saveEventToFirebase(eventData, originalText) {
-            const saveBtn = document.getElementById('saveEventBtn');
-
-            if (editingEventId) {
-                // Update existing event
-                db.collection('events').doc(editingEventId).update(eventData).then(() => {
-                    showToast('Event updated successfully!');
-                    loadEventsFromFirebase();
-                    closeEventModal();
-                }).catch((error) => {
-                    console.error("Error updating event: ", error);
-                    showToast('Failed to update event. Please try again.', 'error');
-                }).finally(() => {
-                    saveBtn.textContent = originalText;
-                    saveBtn.disabled = false;
-                });
-            } else {
-                // Add new event
-                db.collection('events').add(eventData).then(() => {
-                    showToast('Event created successfully!');
-                    loadEventsFromFirebase();
-                    closeEventModal();
-                }).catch((error) => {
-                    console.error("Error adding event: ", error);
-                    showToast('Failed to create event. Please try again.', 'error');
-                }).finally(() => {
-                    saveBtn.textContent = originalText;
-                    saveBtn.disabled = false;
-                });
-            }
-        }
-
-        // Show event preview
-        function showEventPreview(eventId) {
-            const event = events.find(e => e.id === eventId);
-            if (!event) return;
-
-            selectedEventId = eventId;
-
-            // Update preview content
-            document.getElementById('previewTitle').textContent = event.title;
-            document.getElementById('previewStart').textContent = formatEventDate(event.startDate);
-            document.getElementById('previewEnd').textContent = formatEventDate(event.endDate);
-
-            // Handle optional fields
-            showHideField('previewLocationField', 'previewLocation', event.location);
-            showHideField('previewAddressField', 'previewAddress', event.address);
-            showHideField('previewDescField', 'previewDesc', event.description);
-
-            // Handle image
-            const imageContainer = document.getElementById('previewImageContainer');
-            if (event.image) {
-                imageContainer.innerHTML = `<img src="${event.image}" class="preview-image" alt="Event image">`;
-            } else {
-                imageContainer.innerHTML = '';
-            }
-
-            document.getElementById('previewModal').classList.add('show');
-        }
-
-        // Show/hide preview field
-        function showHideField(fieldId, valueId, value) {
-            const field = document.getElementById(fieldId);
-            const valueElement = document.getElementById(valueId);
-            
-            if (value && value.trim()) {
-                valueElement.textContent = value;
-                field.style.display = 'flex';
-            } else {
-                field.style.display = 'none';
-            }
-        }
-
-        // Close preview modal
-        function closePreviewModal() {
-            document.getElementById('previewModal').classList.remove('show');
-            document.getElementById('dropdownMenu').classList.remove('show');
-            selectedEventId = null;
-        }
-
-        // Toggle dropdown
-        function toggleDropdown() {
-            const dropdown = document.getElementById('dropdownMenu');
-            dropdown.classList.toggle('show');
-        }
-
-        // Edit current event
-        function editCurrentEvent() {
-            if (!selectedEventId) return;
-            
-            document.getElementById('dropdownMenu').classList.remove('show');
-            closePreviewModal();
-            openEditEventModal(selectedEventId);
-        }
-
-        // Delete from preview
-        function deleteFromPreview() {
-            if (!selectedEventId) return;
-            
-            eventToDelete = selectedEventId;
-            document.getElementById('dropdownMenu').classList.remove('show');
-            closePreviewModal();
-            document.getElementById('deleteModal').classList.add('show');
-        }
-
-        // Close delete modal
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.remove('show');
-            eventToDelete = null;
-        }
-
-        // Confirm delete event
-        function confirmDeleteEvent() {
-            if (eventToDelete) {
-                deleteEventDirectly(eventToDelete);
-                closeDeleteModal();
-            }
-        }
-
-        // Delete event directly
-        function deleteEventDirectly(eventId) {
-            db.collection('events').doc(eventId).delete().then(() => {
-                showToast('Event deleted successfully!');
-                loadEventsFromFirebase();
-            }).catch((error) => {
-                console.error("Error deleting event: ", error);
-                showToast('Failed to delete event. Please try again.', 'error');
-            });
         }
 
         // Format datetime local
@@ -1646,7 +1427,7 @@
             }
 
             const toast = document.createElement('div');
-            toast.className = 'success-toast';
+            toast.className = `success-toast ${type === 'error' ? 'error-toast' : ''}`;
             toast.textContent = message;
             document.body.appendChild(toast);
 
@@ -1668,25 +1449,21 @@
 
         // Show help
         function showHelp() {
-            alert('BXE Community Calendar Help:\n\n' +
-                '📅 Creating Events:\n' +
-                '• Click on any date or use "+ Add Event" button\n' +
-                '• Fill in required fields (marked with *)\n' +
-                '• Upload an image if desired\n' +
-                '• Click "Save Event"\n\n' +
-                '🔍 Viewing Events:\n' +
-                '• Click any event to see full details\n' +
-                '• View upcoming events in the sidebar below\n' +
-                '• Use the search box to find specific upcoming events\n\n' +
-                '✏️ Editing Events:\n' +
-                '• Click event to open preview\n' +
-                '• Click three dots (⋯) menu\n' +
-                '• Select "Edit Event"\n\n' +
-                '🗑️ Deleting Events:\n' +
-                '• Double-click event for quick delete\n' +
-                '• OR preview event → three dots → "Delete this event"\n\n' +
-                '📱 Navigation:\n' +
-                '• Use ← → arrows for months\n' +
+            alert('The Black Experience Community Calendar Help:\n\n' +
+                'Authentication:\n' +
+                '• Click "Log in to post" to create an account or sign in\n' +
+                '• Complete your profile setup after first login\n' +
+                '• Only authenticated users can create events\n\n' +
+                'Creating Events:\n' +
+                '• Click "Post an event" when logged in\n' +
+                '• Or click on any calendar date\n' +
+                '• Fill in required fields and save\n\n' +
+                'Viewing Events:\n' +
+                '• Click any event to see details\n' +
+                '• View upcoming events in the sidebar\n' +
+                '• Use search to find specific events\n\n' +
+                'Navigation:\n' +
+                '• Use arrow buttons to navigate months\n' +
                 '• "Today" button returns to current date\n\n' +
                 'Need help? Contact support!');
         }
