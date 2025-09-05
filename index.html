@@ -1,89 +1,116 @@
-<h4 style="color: #ffd700; margin-bottom: 15px;">Liability Disclaimer</h4>
-                <p style="margin-bottom: 15px;"><strong>The Black Experience Community Calendar and BXE LLC are not responsible for:</strong></p>
-                <ul style="margin-bottom: 15px; padding-left: 20px;">
-                    <li>Events posted by community members</li>
-                    <li>Event cancellations, changes, or inaccuracies</li>
-                    <li>Any damages, injuries, or losses related to attended events</li>
-                    <li>Third-party content or external links</li>
-                    <li>User interactions or disputes</li>
-                </ul>
+<!-- Event Modal -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Create Event</div>
+                <button class="close-btn" onclick="closeEventModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Event Title *</label>
+                    <input type="text" class="form-input" id="eventTitle" placeholder="Enter event title" required>
+                    <div class="error-message" id="titleError">Please enter an event title</div>
+                </div>
                 
-                <h4 style="color: #ffd700; margin-bottom: 15px;">User Responsibilities</h4>
-                <p style="margin-bottom: 15px;">You are solely responsible for:</p>
-                <ul style="margin-bottom: 15px; padding-left: 20px;">
-                    <li>The accuracy of your event information</li>
-                    <li>Compliance with all applicable laws</li>
-                    <li>Your own safety when attending events</li>
-                    <li>Verifying event details before attending</li>
-                </ul>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">Moderation Rights</h4>
-                <p style="margin-bottom: 15px;">We reserve the right to remove any content that violates our guidelines without notice. Repeated violations may result in account suspension.</p>
-                
-                <p style="font-size: 12px; color: #888; margin-top: 20px;">Last updated: September 2025</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Start Date & Time *</label>
+                        <input type="datetime-local" class="form-input" id="startDate" required>
+                        <div class="error-message" id="startError">Please select a start date</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Date & Time *</label>
+                        <input type="datetime-local" class="form-input" id="endDate" required>
+                        <div class="error-message" id="endError">Please select an end date</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" class="form-input" id="location" placeholder="Event location">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="description" placeholder="Event details"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Created by</label>
+                    <input type="text" class="form-input" id="createdByName" readonly style="background: #222; color: #888;">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Event Image</label>
+                    <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
+                        <div id="uploadText">
+                            <div style="font-size: 24px; margin-bottom: 8px;">📷</div>
+                            <div>Click to upload image or drag and drop</div>
+                            <div style="font-size: 12px; color: #888; margin-top: 4px;">PNG, JPG up to 5MB</div>
+                        </div>
+                        <div id="imagePreview" style="display: none;"></div>
+                    </div>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" onclick="closeTermsModal()">Close</button>
+                <button class="btn btn-cancel" onclick="closeEventModal()">Cancel</button>
+                <button class="btn btn-primary" id="saveEventBtn" onclick="saveEvent()">Create Event</button>
             </div>
         </div>
     </div>
 
-    <!-- Community Guidelines Modal -->
-    <div id="guidelinesModal" class="modal">
+    <!-- Event Preview Modal -->
+    <div id="eventPreviewModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Community Guidelines</div>
-                <button class="close-btn" onclick="closeGuidelinesModal()">&times;</button>
+                <div class="modal-title" id="previewEventTitle">Event Details</div>
+                <button class="close-btn" onclick="closeEventPreviewModal()">&times;</button>
             </div>
-            <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
-                <h4 style="color: #ffd700; margin-bottom: 15px;">Our Community Values</h4>
-                <p style="margin-bottom: 15px;">The Black Experience Community Calendar celebrates and supports our community through shared events and experiences. All content should reflect these values:</p>
+            <div class="modal-body">
+                <div id="previewEventImage" style="margin-bottom: 20px;"></div>
                 
-                <h4 style="color: #ffd700; margin-bottom: 15px;">✅ Encouraged Content</h4>
-                <ul style="margin-bottom: 15px; padding-left: 20px; color: #28a745;">
-                    <li>Educational workshops and seminars</li>
-                    <li>Cultural celebrations and performances</li>
-                    <li>Business networking and professional development</li>
-                    <li>Community service and volunteer opportunities</li>
-                    <li>Family-friendly entertainment</li>
-                    <li>Health and wellness activities</li>
-                    <li>Arts, music, and creative events</li>
-                    <li>Youth and senior programs</li>
-                </ul>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">❌ Prohibited Content</h4>
-                <ul style="margin-bottom: 15px; padding-left: 20px; color: #dc3545;">
-                    <li>Hate speech or discriminatory language</li>
-                    <li>Adult or inappropriate content</li>
-                    <li>Political campaigning or partisan content</li>
-                    <li>Illegal activities or substances</li>
-                    <li>Spam or excessive self-promotion</li>
-                    <li>False or misleading information</li>
-                    <li>Events that exclude based on protected characteristics</li>
-                    <li>Dangerous or harmful activities</li>
-                </ul>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">Event Quality Standards</h4>
-                <ul style="margin-bottom: 15px; padding-left: 20px;">
-                    <li>Provide complete and accurate event details</li>
-                    <li>Include clear start/end times and location</li>
-                    <li>Use appropriate, high-quality images</li>
-                    <li>Update or cancel events promptly if needed</li>
-                    <li>Respond to community questions respectfully</li>
-                </ul>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">Reporting Issues</h4>
-                <p style="margin-bottom: 15px;">If you see content that violates these guidelines, please contact our administrators. We review all reports promptly and take appropriate action.</p>
-                
-                <p style="background: #3a3a3a; padding: 15px; border-radius: 8px; border-left: 4px solid #ffd700;">
-                    <strong>Remember:</strong> This calendar represents our community. Help us maintain a positive, welcoming space for everyone.
-                </p>
+                <div class="preview-info">
+                    <div class="preview-field">
+                        <span class="preview-label">📅 Start:</span>
+                        <span id="previewEventStart"></span>
+                    </div>
+                    
+                    <div class="preview-field">
+                        <span class="preview-label">🏁 End:</span>
+                        <span id="previewEventEnd"></span>
+                    </div>
+                    
+                    <div class="preview-field">
+                        <span class="preview-label">📍 Location:</span>
+                        <span id="previewEventLocation"></span>
+                    </div>
+                    
+                    <div class="preview-field">
+                        <span class="preview-label">📝 Description:</span>
+                        <span id="previewEventDescription"></span>
+                    </div>
+                    
+                    <div class="preview-field">
+                        <span class="preview-label">👤 Created by:</span>
+                        <span id="previewEventCreator"></span>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" onclick="closeGuidelinesModal()">Close</button>
+                <div id="eventOwnerControls" style="display: none; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="editCurrentEvent()">Edit Event</button>
+                    <button class="btn btn-danger" onclick="deleteCurrentEvent()">Delete Event</button>
+                </div>
+                <button class="btn btn-cancel" onclick="closeEventPreviewModal()">Close</button>
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 20px 0; color: #666; font-size: 11px; border-top: 1px solid #404040; margin-top: 40px;">
+        <p style="margin: 0;">© 2025 The Black Experience Community Calendar | BXE LLC</p>
+    </footer>
 
     <script>
         // Global variables
@@ -102,7 +129,6 @@
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-        // Admin email addresses
         const ADMIN_EMAILS = [
             '97franchise@gmail.com',
             'afgarner@bxellc.com',
@@ -119,7 +145,6 @@
             loadEventsFromFirebase();
         });
 
-        // Setup real-time date tracking for Central Time
         function setupRealTimeDate() {
             updateCurrentTime();
             setInterval(updateCurrentTime, 60000);
@@ -149,7 +174,6 @@
             }
         }
 
-        // Auth state listener
         function setupAuthStateListener() {
             auth.onAuthStateChanged(async (user) => {
                 currentUser = user;
@@ -230,7 +254,6 @@
             }
         }
 
-        // Auth modal functions
         function openAuthModal() {
             document.getElementById('authModal').classList.add('show');
         }
@@ -313,7 +336,6 @@
             }
         }
 
-        // Onboarding modal functions
         function openOnboardingModal() {
             document.getElementById('onboardingModal').classList.add('show');
             
@@ -368,24 +390,6 @@
             }
         }
 
-        // Terms and Guidelines modal functions
-        function showTermsModal() {
-            document.getElementById('termsModal').classList.add('show');
-        }
-
-        function closeTermsModal() {
-            document.getElementById('termsModal').classList.remove('show');
-        }
-
-        function showGuidelinesModal() {
-            document.getElementById('guidelinesModal').classList.add('show');
-        }
-
-        function closeGuidelinesModal() {
-            document.getElementById('guidelinesModal').classList.remove('show');
-        }
-
-        // Setup search
         function setupSearch() {
             const searchInput = document.getElementById('searchInput');
             searchInput.addEventListener('input', function(e) {
@@ -394,7 +398,6 @@
             });
         }
 
-        // Setup event listeners
         function setupEventListeners() {
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('modal')) {
@@ -402,13 +405,10 @@
                     if (e.target.id === 'onboardingModal') closeOnboardingModal();
                     if (e.target.id === 'eventModal') closeEventModal();
                     if (e.target.id === 'eventPreviewModal') closeEventPreviewModal();
-                    if (e.target.id === 'termsModal') closeTermsModal();
-                    if (e.target.id === 'guidelinesModal') closeGuidelinesModal();
                 }
             });
         }
 
-        // Setup image upload
         function setupImageUpload() {
             const imageUpload = document.getElementById('imageUpload');
             if (imageUpload) {
@@ -492,7 +492,6 @@
             uploadedImage = null;
         }
 
-        // Load events from Firebase
         function loadEventsFromFirebase() {
             db.collection('events')
                 .orderBy('start', 'asc')
@@ -512,7 +511,6 @@
                 });
         }
 
-        // Render calendar
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
             const monthYear = document.getElementById('monthYear');
@@ -617,7 +615,6 @@
                    date1.getFullYear() === date2.getFullYear();
         }
 
-        // Update upcoming events
         function updateUpcomingEvents() {
             const container = document.getElementById('upcomingEvents');
             const centralTimeNow = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Chicago"}));
@@ -770,7 +767,6 @@
             }
         }
 
-        // Navigation functions
         function previousMonth() {
             currentDate.setMonth(currentDate.getMonth() - 1);
             renderCalendar();
@@ -786,7 +782,6 @@
             renderCalendar();
         }
 
-        // Event modal functions
         function openEventModal(selectedDate = null) {
             if (!currentUser || !userProfile) {
                 handleAuthButtonClick();
@@ -825,249 +820,7 @@
             
             document.getElementById('eventTitle').value = event.title;
             document.getElementById('startDate').value = event.start;
-            document.getElementById('endDate').value = event.end;
-            document.getElementById('location').value = event.location || '';
-            document.getElementById('description').value = event.description || '';
-            document.getElementById('createdByName').value = event.created_by_name;
-            
-            if (event.image_url) {
-                uploadedImage = event.image_url;
-                showImagePreview(event.image_url);
-            } else {
-                resetImageUpload();
-            }
-            
-            document.getElementById('eventModal').classList.add('show');
-        }
-
-        function closeEventModal() {
-            document.getElementById('eventModal').classList.remove('show');
-            clearEventForm();
-            editingEventId = null;
-        }
-
-        function clearEventForm() {
-            document.getElementById('eventTitle').value = '';
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
-            document.getElementById('location').value = '';
-            document.getElementById('description').value = '';
-            document.getElementById('createdByName').value = '';
-            
-            resetImageUpload();
-            
-            const errorElements = document.querySelectorAll('.error-message');
-            const inputElements = document.querySelectorAll('.form-input, .form-select, .form-textarea');
-            
-            errorElements.forEach(error => error.classList.remove('show'));
-            inputElements.forEach(input => input.classList.remove('error'));
-        }
-
-        async function saveEvent() {
-            if (!currentUser || !userProfile) {
-                showToast('You must be logged in to create events', 'error');
-                return;
-            }
-
-            if (!validateEventForm()) {
-                return;
-            }
-
-            const saveBtn = document.getElementById('saveEventBtn');
-            saveBtn.disabled = true;
-            saveBtn.textContent = editingEventId ? 'Updating...' : 'Creating...';
-
-            const eventData = {
-                title: document.getElementById('eventTitle').value.trim(),
-                start: document.getElementById('startDate').value,
-                end: document.getElementById('endDate').value,
-                location: document.getElementById('location').value.trim(),
-                description: document.getElementById('description').value.trim(),
-                image_url: uploadedImage || null,
-                updated_at: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            if (!editingEventId) {
-                eventData.created_by_uid = currentUser.uid;
-                eventData.created_by_name = userProfile.full_name;
-                eventData.status = 'public';
-                eventData.created_at = firebase.firestore.FieldValue.serverTimestamp();
-            }
-
-            try {
-                if (editingEventId) {
-                    await db.collection('events').doc(editingEventId).update(eventData);
-                    showToast('Event updated successfully!');
-                } else {
-                    await db.collection('events').add(eventData);
-                    showToast('Event created successfully!');
-                }
-                
-                loadEventsFromFirebase();
-                closeEventModal();
-            } catch (error) {
-                console.error('Error saving event:', error);
-                showToast('Failed to save event. Please try again.', 'error');
-            } finally {
-                saveBtn.disabled = false;
-                saveBtn.textContent = editingEventId ? 'Update Event' : 'Create Event';
-            }
-        }
-
-        function validateEventForm() {
-            let isValid = true;
-            
-            const title = document.getElementById('eventTitle').value.trim();
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-
-            const errorElements = document.querySelectorAll('.error-message');
-            const inputElements = document.querySelectorAll('.form-input');
-            
-            errorElements.forEach(error => error.classList.remove('show'));
-            inputElements.forEach(input => input.classList.remove('error'));
-
-            if (!title) {
-                showFieldError('eventTitle', 'titleError', 'Please enter an event title');
-                isValid = false;
-            }
-
-            if (!startDate) {
-                showFieldError('startDate', 'startError', 'Please select a start date');
-                isValid = false;
-            }
-
-            if (!endDate) {
-                showFieldError('endDate', 'endError', 'Please select an end date');
-                isValid = false;
-            }
-
-            if (startDate && endDate) {
-                const start = new Date(startDate);
-                const end = new Date(endDate);
-                
-                if (end <= start) {
-                    showFieldError('endDate', 'endError', 'End date must be after start date');
-                    isValid = false;
-                }
-            }
-
-            return isValid;
-        }
-
-        function showFieldError(fieldId, errorId, message) {
-            const field = document.getElementById(fieldId);
-            const error = document.getElementById(errorId);
-            
-            field.classList.add('error');
-            error.textContent = message;
-            error.classList.add('show');
-        }
-
-        // Admin delete event function
-        function adminDeleteEvent(eventId, eventTitle) {
-            if (!isAdmin) {
-                showToast('Access denied. Admin privileges required.', 'error');
-                return;
-            }
-            
-            const reason = prompt(`Admin Action: Delete event "${eventTitle}"?\n\nOptional: Enter reason for deletion (will be logged):`);
-            
-            if (reason !== null) {
-                deleteEventWithReason(eventId, eventTitle, reason || 'No reason provided');
-            }
-        }
-
-        async function deleteEventWithReason(eventId, eventTitle, reason) {
-            try {
-                const event = events.find(e => e.id === eventId);
-                
-                await db.collection('admin_actions').add({
-                    action: 'delete_event',
-                    event_id: eventId,
-                    event_title: eventTitle,
-                    admin_email: currentUser.email,
-                    admin_name: userProfile.full_name,
-                    reason: reason,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                await db.collection('events').doc(eventId).delete();
-                
-                if (event && event.image_url) {
-                    try {
-                        const imageRef = storage.refFromURL(event.image_url);
-                        await imageRef.delete();
-                    } catch (imageError) {
-                        console.warn('Could not delete image:', imageError);
-                    }
-                }
-                
-                showToast(`Event "${eventTitle}" deleted by admin`);
-                loadEventsFromFirebase();
-            } catch (error) {
-                console.error('Error deleting event:', error);
-                showToast('Failed to delete event. Please try again.', 'error');
-            }
-        }
-
-        function formatDateTimeLocal(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
-
-        function showToast(message, type = 'success') {
-            const existing = document.querySelector('.success-toast');
-            if (existing) {
-                existing.remove();
-            }
-
-            const toast = document.createElement('div');
-            toast.className = `success-toast ${type === 'error' ? 'error-toast' : ''}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 100);
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => {
-                    if (toast.parentNode) {
-                        toast.parentNode.removeChild(toast);
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        function showHelp() {
-            alert('The Black Experience Community Calendar Help:\n\n' +
-                'Authentication:\n' +
-                '• Click "Log in to post" to create an account or sign in\n' +
-                '• Complete your profile setup after first login\n' +
-                '• Only authenticated users can create events\n\n' +
-                'Creating Events:\n' +
-                '• Click "Post an event" when logged in\n' +
-                '• Or click on any calendar date\n' +
-                '• Fill in required fields and save\n\n' +
-                'Viewing Events:\n' +
-                '• Click any event to see details\n' +
-                '• View upcoming events in the sidebar\n' +
-                '• Use search to find specific events\n\n' +
-                'Navigation:\n' +
-                '• Use arrow buttons to navigate months\n' +
-                '• "Today" button returns to current date\n\n' +
-                'Need help? Contact support!');
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
+            <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1081,7 +834,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <script>
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAQQwmtpr17jHgx73ux6TaaXRJgwPqTTSM",
             authDomain: "bxe-community-calendar.firebaseapp.com",
@@ -1739,22 +1491,247 @@
             background: #dc3545;
         }
 
+        /* Mobile Responsive */
         @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
             .header {
+                padding: 15px;
                 flex-direction: column;
                 gap: 15px;
                 text-align: center;
+            }
+
+            .logo {
+                font-size: 18px;
+                line-height: 1.2;
             }
 
             .header-controls {
                 width: 100%;
                 justify-content: center;
                 flex-wrap: wrap;
+                gap: 10px;
             }
 
             .user-info {
                 order: -1;
                 justify-content: center;
+                font-size: 12px;
+            }
+
+            .calendar-header {
+                padding: 15px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .calendar-nav {
+                gap: 15px;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .month-year {
+                font-size: 18px;
+                text-align: center;
+            }
+
+            .controls {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+
+            .calendar-day {
+                min-height: 80px;
+                padding: 5px;
+                font-size: 12px;
+            }
+
+            .day-number {
+                margin-bottom: 4px;
+                font-size: 12px;
+            }
+
+            .event {
+                font-size: 10px;
+                padding: 2px 4px;
+                margin-bottom: 2px;
+            }
+
+            .sidebar {
+                margin-top: 15px;
+                padding: 15px;
+            }
+
+            .sidebar h3 {
+                font-size: 16px;
+            }
+
+            .upcoming-event {
+                padding: 10px;
+                flex-direction: column;
+                gap: 8px;
+                align-items: stretch;
+            }
+
+            .upcoming-event-image {
+                width: 100%;
+                height: 120px;
+                order: -1;
+                border-radius: 8px;
+            }
+
+            .upcoming-event-content {
+                text-align: center;
+            }
+
+            .upcoming-event-title {
+                font-size: 14px;
+            }
+
+            .upcoming-event-date {
+                font-size: 11px;
+            }
+
+            .upcoming-event-creator {
+                font-size: 10px;
+            }
+
+            /* Modal Responsiveness */
+            .modal-content {
+                width: 95%;
+                margin: 10px;
+                max-height: 90vh;
+            }
+
+            .modal-header {
+                padding: 15px;
+            }
+
+            .modal-title {
+                font-size: 18px;
+            }
+
+            .modal-body {
+                padding: 15px;
+            }
+
+            .modal-footer {
+                padding: 15px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .form-input, .form-select, .form-textarea {
+                padding: 12px;
+                font-size: 16px;
+            }
+
+            .upload-area {
+                padding: 20px;
+            }
+
+            .preview-field {
+                flex-direction: column;
+                gap: 5px;
+                margin-bottom: 12px;
+            }
+
+            .preview-label {
+                min-width: auto;
+                font-size: 14px;
+            }
+
+            .preview-image {
+                max-height: 200px;
+            }
+
+            .search-input {
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            .terms-checkbox {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-start;
+            }
+
+            .terms-checkbox input[type="checkbox"] {
+                margin-top: 0;
+            }
+
+            .auth-modal .modal-content {
+                max-width: 95%;
+            }
+
+            .google-btn {
+                padding: 15px;
+                font-size: 16px;
+            }
+
+            .admin-delete-btn {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 16px;
+            }
+
+            .calendar-day {
+                min-height: 60px;
+                padding: 3px;
+            }
+
+            .day-number {
+                font-size: 11px;
+            }
+
+            .event {
+                font-size: 9px;
+                padding: 1px 3px;
+            }
+
+            .month-year {
+                font-size: 16px;
+            }
+
+            .nav-btn {
+                padding: 6px 10px;
+                font-size: 16px;
+            }
+
+            .modal-content {
+                width: 98%;
+                margin: 5px;
+            }
+
+            .modal-header, .modal-body, .modal-footer {
+                padding: 12px;
             }
         }
     </style>
@@ -1843,7 +1820,7 @@
         </div>
     </div>
 
-    <!-- Onboarding Modal -->
+    <!-- Onboarding Modal with Terms -->
     <div id="onboardingModal" class="modal onboarding-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1870,12 +1847,38 @@
                         <label class="form-label">Company Name *</label>
                         <input type="text" class="form-input" id="companyName" placeholder="Your company or organization" required>
                     </div>
-                    
-                    <div class="terms-checkbox">
-                        <input type="checkbox" id="termsCheckbox" required>
-                        <label for="termsCheckbox" class="terms-text">
-                            I agree to the terms and community guidelines.
-                        </label>
+
+                    <!-- Terms and Disclaimer Section -->
+                    <div style="background: #3a3a3a; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffd700;">
+                        <h4 style="color: #ffd700; margin-bottom: 15px;">Terms & Community Guidelines</h4>
+                        
+                        <div style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; font-size: 13px; line-height: 1.5;">
+                            <p style="margin-bottom: 10px;"><strong>By using The Black Experience Community Calendar, you agree to:</strong></p>
+                            
+                            <ul style="margin-bottom: 15px; padding-left: 20px;">
+                                <li>Post only community-appropriate, family-friendly events</li>
+                                <li>Provide accurate event information</li>
+                                <li>Respect community guidelines and avoid offensive content</li>
+                                <li>Take responsibility for your own event attendance and safety</li>
+                            </ul>
+                            
+                            <p style="margin-bottom: 10px;"><strong>Important Disclaimer:</strong></p>
+                            <p style="margin-bottom: 10px;">The Black Experience Community Calendar and BXE LLC are not responsible for events posted by community members, event cancellations, changes, or any damages, injuries, or losses related to attended events. You attend events at your own risk and are responsible for verifying event details.</p>
+                            
+                            <p style="margin-bottom: 10px;"><strong>We reserve the right to:</strong></p>
+                            <ul style="margin-bottom: 10px; padding-left: 20px;">
+                                <li>Remove content that violates our guidelines</li>
+                                <li>Suspend accounts for repeated violations</li>
+                                <li>Moderate all posted content</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="terms-checkbox">
+                            <input type="checkbox" id="termsCheckbox" required>
+                            <label for="termsCheckbox" class="terms-text">
+                                <strong>I have read and agree to the above terms, community guidelines, and disclaimer.</strong>
+                            </label>
+                        </div>
                     </div>
                     
                     <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;" id="onboardingSubmitBtn">
