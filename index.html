@@ -661,13 +661,9 @@
                 justify-content: center;
             }
 
-            *,
-            *::before,
-            *::after { box-sizing: border-box; }
-            /* Make calendar fit screen width */
             .calendar-container {
                 width: 100%;
-                max-width: 100vw;      /* never wider than the phone */
+                max-width: 10vw;      /* never wider than the phone */
                 overflow-x: hidden;    /* hide any accidental overflow */
             }
 
@@ -684,20 +680,12 @@
             .day-header {
                 padding: 8px 4px;
                 font-size: 11px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: normal;          /* allow wrapping (avoid nowrap) */
-                word-break: break-word;       /* break long words if needed */
                 background: #3a3a3a;
             }
 
             .calendar-day {
                 min-height: 60px;
                 padding: 4px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: normal;          /* allow wrapping (avoid nowrap) */
-                word-break: break-word;       /* break long words if needed */
                 border: none;
                 background: #2d2d2d;
             }
