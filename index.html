@@ -607,6 +607,153 @@
             color: #b0b0b0;
             line-height: 1.4;
         }
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 15px;
+            }
+
+            .header-controls {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .user-info {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+                order: -1;
+            }
+
+            .user-settings {
+                margin-top: 8px;
+            }
+
+            /* Stack header buttons vertically */
+            .header-controls > .btn {
+                width: 200px;
+                max-width: 90vw;
+            }
+
+            .calendar-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 12px;
+            }
+
+            .calendar-nav {
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .controls {
+                justify-content: center;
+            }
+
+            /* Make calendar fit screen width */
+            .calendar-container {
+                margin: 0 -10px;
+                border-radius: 0;
+            }
+
+            .calendar-grid {
+                grid-template-columns: repeat(7, 1fr);
+                grid-auto-rows: minmax(60px, auto);
+                gap: 1px;
+                background: #404040;
+            }
+
+            .day-header {
+                padding: 8px 4px;
+                font-size: 11px;
+                background: #3a3a3a;
+            }
+
+            .calendar-day {
+                min-height: 60px;
+                padding: 4px;
+                border: none;
+                background: #2d2d2d;
+            }
+
+            .day-number {
+                font-size: 12px;
+                margin-bottom: 2px;
+            }
+
+            .event {
+                font-size: 9px;
+                padding: 1px 3px;
+                margin-bottom: 1px;
+                line-height: 1.1;
+                -webkit-line-clamp: 1;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .modal-footer {
+                justify-content: center;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+
+            .preview-field {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .preview-label {
+                min-width: auto;
+            }
+
+            .upcoming-event {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .upcoming-event-image {
+                width: 100%;
+                height: 120px;
+                max-width: 200px;
+            }
+
+            /* Footer improvements */
+            .footer-links {
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .footer-link {
+                width: 200px;
+                text-align: center;
+                padding: 10px;
+                background: rgba(255, 215, 0, 0.1);
+                border-radius: 6px;
+            }
+        }
 
         /* Sidebar */
         .sidebar {
