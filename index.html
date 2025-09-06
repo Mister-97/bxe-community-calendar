@@ -681,12 +681,20 @@
             .day-header {
                 padding: 8px 4px;
                 font-size: 11px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: normal;          /* allow wrapping (avoid nowrap) */
+                word-break: break-word;       /* break long words if needed */
                 background: #3a3a3a;
             }
 
             .calendar-day {
                 min-height: 60px;
                 padding: 4px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: normal;          /* allow wrapping (avoid nowrap) */
+                word-break: break-word;       /* break long words if needed */
                 border: none;
                 background: #2d2d2d;
             }
@@ -701,6 +709,10 @@
                 padding: 1px 3px;
                 margin-bottom: 1px;
                 line-height: 1.1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: normal;          /* allow wrapping (avoid nowrap) */
+                word-break: break-word;       /* break long words if needed */
                 -webkit-line-clamp: 1;
             }
 
