@@ -1,4 +1,1082 @@
-<form id="onboardingForm" onsubmit="handleOnboardingSubmit(event)">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Black Experience Community Calendar</title>
+    
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAQQwmtpr17jHgx73ux6TaaXRJgwPqTTSM",
+            authDomain: "bxe-community-calendar.firebaseapp.com",
+            projectId: "bxe-community-calendar",
+            storageBucket: "bxe-community-calendar.firebasestorage.app",
+            messagingSenderId: "99255180622",
+            appId: "1:99255180622:web:2be196ce5aadcb55eb921f",
+            measurementId: "G-HD861K8CNG"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const auth = firebase.auth();
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #e0e6ed;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #b0b0b0;
+            font-size: 14px;
+        }
+
+        .admin-badge {
+            background: #dc3545;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+
+        .calendar-container {
+            background: #2d2d2d;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .calendar-header {
+            padding: 20px;
+            background: #ffd700;
+            color: #1a1a1a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-btn {
+            background: rgba(26,26,26,0.2);
+            border: none;
+            color: #1a1a1a;
+            font-size: 18px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(26,26,26,0.3);
+        }
+
+        .month-year {
+            font-size: clamp(18px, 5vw, 24px);
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            font-size: clamp(12px, 2.5vw, 14px);
+        }
+
+        .btn-primary {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ff5252;
+        }
+
+        .header .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .header .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-secondary {
+            background: rgba(26,26,26,0.2);
+            color: #1a1a1a;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(26,26,26,0.3);
+        }
+
+        .btn-auth {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-auth:hover {
+            background: #218838;
+        }
+
+        .btn-logout {
+            background: #6c757d;
+            color: white;
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+
+        .btn-logout:hover {
+            background: #5a6268;
+        }
+
+        .btn-cancel {
+            background: #666;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #777;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: minmax(80px, auto);
+        }
+
+        .day-header {
+            background: #3a3a3a;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            color: #b0b0b0;
+            font-size: clamp(10px, 2.5vw, 14px);
+            text-transform: uppercase;
+        }
+
+        .calendar-day {
+            min-height: 80px;
+            border: 1px solid #404040;
+            padding: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            flex-direction: column;
+            background: #2d2d2d;
+        }
+
+        .calendar-day:hover {
+            background: #404040;
+        }
+
+        .calendar-day.other-month {
+            color: #666;
+            background: #1f1f1f;
+        }
+
+        .calendar-day.today {
+            background: #ffd700;
+            color: #1a1a1a;
+        }
+
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: clamp(12px, 3vw, 16px);
+        }
+
+        .events {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .event {
+            background: #ffd700;
+            color: #1a1a1a;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: clamp(9px, 2.2vw, 12px);
+            cursor: pointer;
+            transition: background 0.3s;
+            position: relative;
+            font-weight: 500;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .event:hover {
+            background: #e6c200;
+        }
+
+        .admin-controls {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            display: none;
+        }
+
+        .admin-controls.show {
+            display: block;
+        }
+
+        .admin-delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        .admin-delete-btn:hover {
+            opacity: 1;
+            background: #c82333;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #2d2d2d;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: clamp(16px, 4vw, 20px);
+            font-weight: 600;
+            color: #e0e6ed;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #b0b0b0;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: #ffd700;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #404040;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e0e6ed;
+            font-size: clamp(14px, 3vw, 16px);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #404040;
+            border-radius: 8px;
+            font-size: clamp(14px, 3vw, 16px);
+            background: #3a3a3a;
+            color: #e0e6ed;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+
+        .form-input.error, .form-select.error, .form-textarea.error {
+            border-color: #ff6b6b;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .upload-area {
+            border: 2px dashed #666;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background: #3a3a3a;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #ffd700;
+        }
+
+        .upload-area.has-image {
+            padding: 0;
+            border: none;
+            background: transparent;
+        }
+
+        .image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .preview-info {
+            line-height: 1.8;
+        }
+
+        .preview-field {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preview-label {
+            font-weight: 600;
+            min-width: 120px;
+            color: #e0e6ed;
+            flex-shrink: 0;
+        }
+
+        /* Auth Modal Styles */
+        .auth-modal .modal-content {
+            max-width: 400px;
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .toggle-link {
+            color: #ffd700;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .toggle-link:hover {
+            color: #e6c200;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            color: #888;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #404040;
+        }
+
+        .divider span {
+            background: #2d2d2d;
+            padding: 0 15px;
+        }
+
+        .google-btn {
+            width: 100%;
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .google-btn:hover {
+            background: #357ae8;
+        }
+
+        .onboarding-modal .modal-content {
+            max-width: 600px;
+        }
+
+        .terms-section {
+            margin-bottom: 20px;
+        }
+
+        .terms-content {
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .terms-content h5 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .terms-content ul {
+            font-size: 12px;
+        }
+
+        .terms-content li {
+            margin-bottom: 3px;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .terms-checkbox input[type="checkbox"] {
+            margin-top: 3px;
+            min-width: 16px;
+        }
+
+        .terms-text {
+            font-size: 13px;
+            color: #b0b0b0;
+            line-height: 1.4;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #e0e6ed;
+            font-size: clamp(18px, 4vw, 20px);
+        }
+
+        .search-container {
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #404040;
+            border-radius: 8px;
+            font-size: clamp(14px, 3vw, 16px);
+            background: #3a3a3a;
+            color: #e0e6ed;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+
+        .search-input::placeholder {
+            color: #888;
+        }
+
+        .upcoming-event {
+            padding: 12px;
+            border-left: 4px solid #ffd700;
+            background: #3a3a3a;
+            margin-bottom: 10px;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .upcoming-event:hover {
+            background: #404040;
+        }
+
+        .upcoming-event-content {
+            flex: 1;
+        }
+
+        .upcoming-event-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #e0e6ed;
+            font-size: clamp(14px, 3vw, 16px);
+        }
+
+        .upcoming-event-date {
+            font-size: clamp(11px, 2.5vw, 12px);
+            color: #ffd700;
+        }
+
+        .upcoming-event-creator {
+            font-size: clamp(10px, 2.2vw, 11px);
+            color: #888;
+        }
+
+        .upcoming-event-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .no-events {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+
+        .success-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            z-index: 10000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            max-width: 90vw;
+            font-size: clamp(12px, 3vw, 14px);
+        }
+
+        .success-toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .error-toast {
+            background: #dc3545;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: #888;
+            text-decoration: none;
+            font-size: clamp(13px, 2.8vw, 14px);
+            padding: 6px 10px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .footer-link:hover {
+            color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .footer-copyright {
+            color: #666;
+            font-size: clamp(11px, 2.2vw, 12px);
+            border-top: 1px solid #404040;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        /* Help Modal Styles */
+        .help-modal .modal-content {
+            max-width: 600px;
+        }
+
+        .help-section {
+            margin-bottom: 25px;
+        }
+
+        .help-section h5 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .help-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .help-section li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .help-section li:before {
+            content: "•";
+            color: #ffd700;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 15px;
+            }
+
+            .header-controls {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .user-info {
+                order: -1;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .calendar-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 15px;
+            }
+
+            .calendar-nav {
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .calendar-grid {
+                grid-auto-rows: minmax(70px, auto);
+            }
+
+            .calendar-day {
+                min-height: 70px;
+                padding: 6px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .modal-footer {
+                justify-content: center;
+            }
+
+            .preview-field {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .preview-label {
+                min-width: auto;
+            }
+
+            .upcoming-event {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .upcoming-event-image {
+                width: 100%;
+                height: 120px;
+                max-width: 200px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+
+            .calendar-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .calendar-grid {
+                min-width: 560px;
+                grid-auto-rows: minmax(60px, auto);
+            }
+
+            .calendar-day {
+                min-height: 60px;
+                padding: 4px;
+            }
+
+            .day-header {
+                padding: 8px;
+            }
+
+            .event {
+                padding: 2px 4px;
+                margin-bottom: 1px;
+            }
+
+            .modal-content {
+                width: 95vw;
+                max-height: 90vh;
+                margin: 5vh auto;
+            }
+
+            .modal-body {
+                padding: 15px;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+
+            .modal-header, .modal-footer {
+                padding: 15px;
+            }
+
+            .form-input, .form-select, .form-textarea {
+                padding: 14px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+
+            .upload-area {
+                padding: 20px;
+            }
+
+            .success-toast {
+                right: 10px;
+                left: 10px;
+                top: 10px;
+                transform: translateY(-100%);
+            }
+
+            .success-toast.show {
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 320px) {
+            .calendar-grid {
+                min-width: 480px;
+            }
+
+            .calendar-day {
+                min-height: 50px;
+                padding: 3px;
+            }
+
+            .day-number {
+                margin-bottom: 3px;
+            }
+
+            .event {
+                font-size: 9px;
+                padding: 1px 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">The Black Experience Community Calendar</div>
+            <div class="header-controls">
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <span id="userName"></span>
+                    <div class="user-settings" id="userSettings">
+                        <button class="btn btn-logout" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" onclick="showHelp()">Help</button>
+                <button class="btn btn-auth" id="authButton" onclick="handleAuthButtonClick()">Log in to post</button>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="calendar-nav">
+                    <button class="nav-btn" onclick="previousMonth()">‹</button>
+                    <div class="month-year" id="monthYear">September 2025</div>
+                    <button class="nav-btn" onclick="nextMonth()">›</button>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-secondary" onclick="goToToday()">Today</button>
+                </div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="sidebar">
+            <h3>Upcoming Events</h3>
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search upcoming events...">
+            </div>
+            <div id="upcomingEvents">
+                <div class="no-events">
+                    <p>📅 No upcoming events</p>
+                    <p style="font-size: 12px;">Be the first to create an event!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-links">
+                <a href="https://bxellc.com/privacy-policy" target="_blank" class="footer-link">Privacy Policy</a>
+                <a href="https://bxellc.com/terms--conditions" target="_blank" class="footer-link">Terms & Agreement</a>
+                <a href="mailto:afgarner@bxellc.com" class="footer-link">Contact Us</a>
+            </div>
+            <div class="footer-copyright">
+                © 2025 BXE LLC. All rights reserved.<br>
+                Building community through shared experiences.
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal auth-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="authModalTitle">Log In</div>
+                <button class="close-btn" onclick="closeAuthModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-toggle">
+                    <span id="authToggleText">Don't have an account?</span>
+                    <span class="toggle-link" id="authToggleLink" onclick="toggleAuthMode()">Sign up</span>
+                </div>
+                
+                <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="authEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" id="authPassword" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" id="authSubmitBtn">Log In</button>
+                </form>
+                
+                <div class="divider">
+                    <span>or</span>
+                </div>
+                
+                <button class="google-btn" onclick="signInWithGoogle()">
+                    <span>🔐</span>
+                    Continue with Google
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding Modal -->
+    <div id="onboardingModal" class="modal onboarding-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Complete Your Profile</div>
+            </div>
+            <div class="modal-body">
+                <form id="onboardingForm" onsubmit="handleOnboardingSubmit(event)">
                     <div class="form-group">
                         <label class="form-label">Full Name *</label>
                         <input type="text" class="form-input" id="fullName" required>
@@ -96,7 +1174,7 @@
         </div>
     </div>
 
-    <!-- Event Modal -->
+   <!-- Event Modal -->
     <div id="eventModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1416,2447 +2494,6 @@
                 }, 300);
             }, 3000);
         }
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Experience Community Calendar</title>
-    
-    <!-- Firebase CDN -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAQQwmtpr17jHgx73ux6TaaXRJgwPqTTSM",
-            authDomain: "bxe-community-calendar.firebaseapp.com",
-            projectId: "bxe-community-calendar",
-            storageBucket: "bxe-community-calendar.firebasestorage.app",
-            messagingSenderId: "99255180622",
-            appId: "1:99255180622:web:2be196ce5aadcb55eb921f",
-            measurementId: "G-HD861K8CNG"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-        const auth = firebase.auth();
-    </script>
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a1a;
-            color: #e0e6ed;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: #2d2d2d;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: clamp(18px, 4vw, 24px);
-            font-weight: bold;
-            color: #ffd700;
-        }
-
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #b0b0b0;
-            font-size: 14px;
-        }
-
-        .admin-badge {
-            background: #dc3545;
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 8px;
-            font-weight: bold;
-        }
-
-        .calendar-container {
-            background: #2d2d2d;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .calendar-header {
-            padding: 20px;
-            background: #ffd700;
-            color: #1a1a1a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .calendar-nav {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-btn {
-            background: rgba(26,26,26,0.2);
-            border: none;
-            color: #1a1a1a;
-            font-size: 18px;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s;
-            min-width: 44px;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-btn:hover {
-            background: rgba(26,26,26,0.3);
-        }
-
-        .month-year {
-            font-size: clamp(18px, 5vw, 24px);
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-            font-size: clamp(12px, 2.5vw, 14px);
-        }
-
-        .btn-primary {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #ff5252;
-        }
-
-        .header .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .header .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .btn-secondary {
-            background: rgba(26,26,26,0.2);
-            color: #1a1a1a;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(26,26,26,0.3);
-        }
-
-        .btn-auth {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-auth:hover {
-            background: #218838;
-        }
-
-        .btn-logout {
-            background: #6c757d;
-            color: white;
-            font-size: 12px;
-            padding: 6px 12px;
-        }
-
-        .btn-logout:hover {
-            background: #5a6268;
-        }
-
-        .btn-cancel {
-            background: #666;
-            color: white;
-        }
-
-        .btn-cancel:hover {
-            background: #777;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            grid-auto-rows: minmax(80px, auto);
-        }
-
-        .day-header {
-            background: #3a3a3a;
-            padding: 15px;
-            text-align: center;
-            font-weight: 600;
-            color: #b0b0b0;
-            font-size: clamp(10px, 2.5vw, 14px);
-            text-transform: uppercase;
-        }
-
-        .calendar-day {
-            min-height: 80px;
-            border: 1px solid #404040;
-            padding: 8px;
-            cursor: pointer;
-            transition: background 0.3s;
-            display: flex;
-            flex-direction: column;
-            background: #2d2d2d;
-        }
-
-        .calendar-day:hover {
-            background: #404040;
-        }
-
-        .calendar-day.other-month {
-            color: #666;
-            background: #1f1f1f;
-        }
-
-        .calendar-day.today {
-            background: #ffd700;
-            color: #1a1a1a;
-        }
-
-        .day-number {
-            font-weight: 600;
-            margin-bottom: 6px;
-            font-size: clamp(12px, 3vw, 16px);
-        }
-
-        .events {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-
-        .event {
-            background: #ffd700;
-            color: #1a1a1a;
-            padding: 3px 6px;
-            border-radius: 3px;
-            font-size: clamp(9px, 2.2vw, 12px);
-            cursor: pointer;
-            transition: background 0.3s;
-            position: relative;
-            font-weight: 500;
-            white-space: normal;
-            overflow-wrap: anywhere;
-            word-break: break-word;
-            line-height: 1.2;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .event:hover {
-            background: #e6c200;
-        }
-
-        .admin-controls {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            display: none;
-        }
-
-        .admin-controls.show {
-            display: block;
-        }
-
-        .admin-delete-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            cursor: pointer;
-            opacity: 0.8;
-        }
-
-        .admin-delete-btn:hover {
-            opacity: 1;
-            background: #c82333;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: #2d2d2d;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #404040;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: clamp(16px, 4vw, 20px);
-            font-weight: 600;
-            color: #e0e6ed;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #b0b0b0;
-            min-width: 44px;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-btn:hover {
-            color: #ffd700;
-        }
-
-        .modal-body {
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .modal-footer {
-            padding: 20px;
-            border-top: 1px solid #404040;
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #e0e6ed;
-            font-size: clamp(14px, 3vw, 16px);
-        }
-
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #404040;
-            border-radius: 8px;
-            font-size: clamp(14px, 3vw, 16px);
-            background: #3a3a3a;
-            color: #e0e6ed;
-        }
-
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: #ffd700;
-        }
-
-        .form-input.error, .form-select.error, .form-textarea.error {
-            border-color: #ff6b6b;
-        }
-
-        .form-textarea {
-            min-height: 100px;
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .error-message {
-            color: #ff6b6b;
-            font-size: 12px;
-            margin-top: 4px;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .upload-area {
-            border: 2px dashed #666;
-            border-radius: 8px;
-            padding: 30px;
-            text-align: center;
-            background: #3a3a3a;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .upload-area:hover {
-            border-color: #ffd700;
-        }
-
-        .upload-area.has-image {
-            padding: 0;
-            border: none;
-            background: transparent;
-        }
-
-        .image-preview {
-            width: 100%;
-            max-height: 200px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .preview-image {
-            width: 100%;
-            max-height: 300px;
-            object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-
-        .preview-info {
-            line-height: 1.8;
-        }
-
-        .preview-field {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .preview-label {
-            font-weight: 600;
-            min-width: 120px;
-            color: #e0e6ed;
-            flex-shrink: 0;
-        }
-
-        /* Auth Modal Styles */
-        .auth-modal .modal-content {
-            max-width: 400px;
-        }
-
-        .auth-toggle {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .toggle-link {
-            color: #ffd700;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        .toggle-link:hover {
-            color: #e6c200;
-        }
-
-        .divider {
-            text-align: center;
-            margin: 20px 0;
-            position: relative;
-            color: #888;
-        }
-
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #404040;
-        }
-
-        .divider span {
-            background: #2d2d2d;
-            padding: 0 15px;
-        }
-
-        .google-btn {
-            width: 100%;
-            background: #4285f4;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .google-btn:hover {
-            background: #357ae8;
-        }
-
-        .onboarding-modal .modal-content {
-            max-width: 600px;
-        }
-
-        .terms-section {
-            margin-bottom: 20px;
-        }
-
-        .terms-content {
-            font-size: 13px;
-            line-height: 1.4;
-        }
-
-        .terms-content h5 {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .terms-content ul {
-            font-size: 12px;
-        }
-
-        .terms-content li {
-            margin-bottom: 3px;
-        }
-
-        .terms-checkbox {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .terms-checkbox input[type="checkbox"] {
-            margin-top: 3px;
-            min-width: 16px;
-        }
-
-        .terms-text {
-            font-size: 13px;
-            color: #b0b0b0;
-            line-height: 1.4;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            background: #2d2d2d;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .sidebar h3 {
-            margin-bottom: 15px;
-            color: #e0e6ed;
-            font-size: clamp(18px, 4vw, 20px);
-        }
-
-        .search-container {
-            margin-bottom: 15px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #404040;
-            border-radius: 8px;
-            font-size: clamp(14px, 3vw, 16px);
-            background: #3a3a3a;
-            color: #e0e6ed;
-            transition: border-color 0.3s;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #ffd700;
-        }
-
-        .search-input::placeholder {
-            color: #888;
-        }
-
-        .upcoming-event {
-            padding: 12px;
-            border-left: 4px solid #ffd700;
-            background: #3a3a3a;
-            margin-bottom: 10px;
-            border-radius: 0 8px 8px 0;
-            cursor: pointer;
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-        }
-
-        .upcoming-event:hover {
-            background: #404040;
-        }
-
-        .upcoming-event-content {
-            flex: 1;
-        }
-
-        .upcoming-event-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: #e0e6ed;
-            font-size: clamp(14px, 3vw, 16px);
-        }
-
-        .upcoming-event-date {
-            font-size: clamp(11px, 2.5vw, 12px);
-            color: #ffd700;
-        }
-
-        .upcoming-event-creator {
-            font-size: clamp(10px, 2.2vw, 11px);
-            color: #888;
-        }
-
-        .upcoming-event-image {
-            width: 60px;
-            height: 60px;
-            border-radius: 6px;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .no-events {
-            text-align: center;
-            padding: 20px;
-            color: #888;
-        }
-
-        .success-toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            z-index: 10000;
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.3s ease;
-            max-width: 90vw;
-            font-size: clamp(12px, 3vw, 14px);
-        }
-
-        .success-toast.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .error-toast {
-            background: #dc3545;
-        }
-
-        /* Footer Styles */
-        .footer {
-            background: #2d2d2d;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 30px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .footer-link {
-            color: #888;
-            text-decoration: none;
-            font-size: clamp(13px, 2.8vw, 14px);
-            padding: 6px 10px;
-            border-radius: 4px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .footer-link:hover {
-            color: #ffd700;
-            background: rgba(255, 215, 0, 0.1);
-        }
-
-        .footer-copyright {
-            color: #666;
-            font-size: clamp(11px, 2.2vw, 12px);
-            border-top: 1px solid #404040;
-            padding-top: 15px;
-            margin-top: 15px;
-        }
-
-        /* Help Modal Styles */
-        .help-modal .modal-content {
-            max-width: 600px;
-        }
-
-        .help-section {
-            margin-bottom: 25px;
-        }
-
-        .help-section h5 {
-            color: #ffd700;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .help-section ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .help-section li {
-            padding: 5px 0;
-            padding-left: 20px;
-            position: relative;
-        }
-
-        .help-section li:before {
-            content: "•";
-            color: #ffd700;
-            position: absolute;
-            left: 0;
-        }
-
-        /* Mobile Responsive Styles */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-                padding: 15px;
-            }
-
-            .header-controls {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            .user-info {
-                order: -1;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            .calendar-header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-                padding: 15px;
-            }
-
-            .calendar-nav {
-                justify-content: center;
-                gap: 15px;
-            }
-
-            .calendar-grid {
-                grid-auto-rows: minmax(70px, auto);
-            }
-
-            .calendar-day {
-                min-height: 70px;
-                padding: 6px;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .modal-footer {
-                justify-content: center;
-            }
-
-            .preview-field {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
-
-            .preview-label {
-                min-width: auto;
-            }
-
-            .upcoming-event {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 10px;
-            }
-
-            .upcoming-event-image {
-                width: 100%;
-                height: 120px;
-                max-width: 200px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 10px;
-            }
-
-            .calendar-container {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .calendar-grid {
-                min-width: 560px;
-                grid-auto-rows: minmax(60px, auto);
-            }
-
-            .calendar-day {
-                min-height: 60px;
-                padding: 4px;
-            }
-
-            .day-header {
-                padding: 8px;
-            }
-
-            .event {
-                padding: 2px 4px;
-                margin-bottom: 1px;
-            }
-
-            .modal-content {
-                width: 95vw;
-                max-height: 90vh;
-                margin: 5vh auto;
-            }
-
-            .modal-body {
-                padding: 15px;
-                max-height: 60vh;
-                overflow-y: auto;
-            }
-
-            .modal-header, .modal-footer {
-                padding: 15px;
-            }
-
-            .form-input, .form-select, .form-textarea {
-                padding: 14px;
-                font-size: 16px; /* Prevents zoom on iOS */
-            }
-
-            .btn {
-                padding: 12px 20px;
-                font-size: 14px;
-                min-height: 44px;
-            }
-
-            .upload-area {
-                padding: 20px;
-            }
-
-            .success-toast {
-                right: 10px;
-                left: 10px;
-                top: 10px;
-                transform: translateY(-100%);
-            }
-
-            .success-toast.show {
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 320px) {
-            .calendar-grid {
-                min-width: 480px;
-            }
-
-            .calendar-day {
-                min-height: 50px;
-                padding: 3px;
-            }
-
-            .day-number {
-                margin-bottom: 3px;
-            }
-
-            .event {
-                font-size: 9px;
-                padding: 1px 3px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="logo">The Black Experience Community Calendar</div>
-            <div class="header-controls">
-                <div class="user-info" id="userInfo" style="display: none;">
-                    <span id="userName"></span>
-                    <div class="user-settings" id="userSettings">
-                        <button class="btn btn-logout" onclick="logout()">Logout</button>
-                    </div>
-                </div>
-                <button class="btn btn-secondary" onclick="showHelp()">Help</button>
-                <button class="btn btn-auth" id="authButton" onclick="handleAuthButtonClick()">Log in to post</button>
-            </div>
-        </div>
-
-        <!-- Calendar -->
-        <div class="calendar-container">
-            <div class="calendar-header">
-                <div class="calendar-nav">
-                    <button class="nav-btn" onclick="previousMonth()">‹</button>
-                    <div class="month-year" id="monthYear">September 2025</div>
-                    <button class="nav-btn" onclick="nextMonth()">›</button>
-                </div>
-                <div class="controls">
-                    <button class="btn btn-secondary" onclick="goToToday()">Today</button>
-                </div>
-            </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
-        </div>
-
-        <!-- Upcoming Events -->
-        <div class="sidebar">
-            <h3>Upcoming Events</h3>
-            <div class="search-container">
-                <input type="text" class="search-input" id="searchInput" placeholder="Search upcoming events...">
-            </div>
-            <div id="upcomingEvents">
-                <div class="no-events">
-                    <p>📅 No upcoming events</p>
-                    <p style="font-size: 12px;">Be the first to create an event!</p>
-                </div>
-            </div>
-        </div>
-        
-         <!-- Auth Modal -->
-    <div id="authModal" class="modal auth-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="authModalTitle">Log In</div>
-                <button class="close-btn" onclick="closeAuthModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="auth-toggle">
-                    <span id="authToggleText">Don't have an account?</span>
-                    <span class="toggle-link" id="authToggleLink" onclick="toggleAuthMode()">Sign up</span>
-                </div>
-                
-                <form id="authForm" onsubmit="handleAuthSubmit(event)">
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-input" id="authEmail" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <input type="password" class="form-input" id="authPassword" required>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary" style="width: 100%;" id="authSubmitBtn">Log In</button>
-                </form>
-                
-                <div class="divider">
-                    <span>or</span>
-                </div>
-                
-                <button class="google-btn" onclick="signInWithGoogle()">
-                    <span>🔐</span>
-                    Continue with Google
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Onboarding Modal -->
-    <div id="onboardingModal" class="modal onboarding-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Complete Your Profile</div>
-            </div>
-            <div class="modal-body">
-                <form id="onboardingForm" onsubmit="handleOnboardingSubmit(event)">
-                    <div class="form-group">
-                        <label class="form-label">Full Name *</label>
-                        <input type="text" class="form-input" id="fullName" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Phone Number *</label>
-                        <input type="tel" class="form-input" id="phoneNumber" placeholder="(555) 123-4567" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Contact Email *</label>
-                        <input type="email" class="form-input" id="contactEmail" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Company Name *</label>
-                        <input type="text" class="form-input" id="companyName" placeholder="Your company or organization" required>
-                    </div>
-                    
-                    <!-- Terms and Agreement Section -->
-                    <div class="terms-section">
-                        <h4 style="color: #ffd700; margin-bottom: 15px;">Terms and Community Agreement</h4>
-                        <div class="terms-content" style="max-height: 300px; overflow-y: auto; padding: 15px; background: #3a3a3a; border-radius: 8px; margin-bottom: 15px; border: 1px solid #555;">
-                            
-                            <h5 style="color: #ffd700; margin-bottom: 10px;">Liability Disclaimer</h5>
-                            <p style="margin-bottom: 15px;"><strong>The Black Experience Community Calendar and BXE LLC are not responsible for:</strong></p>
-                            <ul style="margin-bottom: 15px; padding-left: 20px;">
-                                <li>Events posted by community members</li>
-                                <li>Event cancellations, changes, or inaccuracies</li>
-                                <li>Any damages, injuries, or losses related to attended events</li>
-                                <li>Third-party content or external links</li>
-                                <li>User interactions or disputes</li>
-                            </ul>
-                            
-                            <h5 style="color: #ffd700; margin-bottom: 10px;">User Responsibilities</h5>
-                            <p style="margin-bottom: 10px;">You are solely responsible for:</p>
-                            <ul style="margin-bottom: 15px; padding-left: 20px;">
-                                <li>The accuracy of your event information</li>
-                                <li>Compliance with all applicable laws</li>
-                                <li>Your own safety when attending events</li>
-                                <li>Verifying event details before attending</li>
-                                <li>Respectful interaction with other community members</li>
-                                <li>Updating or canceling your events promptly if needed</li>
-                            </ul>
-                            
-                            <h5 style="color: #ffd700; margin-bottom: 10px;">Moderation Rights</h5>
-                            <p style="margin-bottom: 10px;">We reserve the right to:</p>
-                            <ul style="margin-bottom: 15px; padding-left: 20px;">
-                                <li>Remove any content that violates our guidelines without notice</li>
-                                <li>Suspend or terminate accounts for repeated violations</li>
-                                <li>Moderate events to ensure community standards</li>
-                                <li>Update these terms and guidelines as needed</li>
-                            </ul>
-                            
-                            <h5 style="color: #ffd700; margin-bottom: 10px;">Community Guidelines</h5>
-                            <p style="margin-bottom: 10px;"><strong>Encouraged Content:</strong></p>
-                            <ul style="margin-bottom: 10px; padding-left: 20px; color: #28a745;">
-                                <li>Educational workshops and seminars</li>
-                                <li>Cultural celebrations and performances</li>
-                                <li>Business networking and professional development</li>
-                                <li>Community service and volunteer opportunities</li>
-                                <li>Family-friendly entertainment</li>
-                                <li>Health and wellness activities</li>
-                                <li>Arts, music, and creative events</li>
-                            </ul>
-                            
-                            <p style="margin-bottom: 10px;"><strong>Prohibited Content:</strong></p>
-                            <ul style="margin-bottom: 15px; padding-left: 20px; color: #dc3545;">
-                                <li>Hate speech or discriminatory language</li>
-                                <li>Adult or inappropriate content</li>
-                                <li>Political campaigning or partisan content</li>
-                                <li>Illegal activities or substances</li>
-                                <li>Spam or excessive self-promotion</li>
-                                <li>False or misleading information</li>
-                                <li>Events that exclude based on protected characteristics</li>
-                            </ul>
-                            
-                            <p style="font-size: 12px; color: #888; margin-top: 20px;">Last updated: September 2025</p>
-                        </div>
-                        
-                        <div class="terms-checkbox">
-                            <input type="checkbox" id="termsCheckbox" required>
-                            <label for="termsCheckbox" class="terms-text">
-                                I have read and agree to the terms, disclaimer, user responsibilities, moderation rights, and community guidelines above. I understand that I am solely responsible for my event information and safety when attending events.
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;" id="onboardingSubmitBtn">
-                        Complete Setup
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-         <!-- Event Modal -->
-    <div id="eventModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="modalTitle">Create Event</div>
-                <button class="close-btn" onclick="closeEventModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Event Title *</label>
-                    <input type="text" class="form-input" id="eventTitle" placeholder="Enter event title" required>
-                    <div class="error-message" id="titleError">Please enter an event title</div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Start Date & Time *</label>
-                        <input type="datetime-local" class="form-input" id="startDate" required>
-                        <div class="error-message" id="startError">Please select a start date</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">End Date & Time *</label>
-                        <input type="datetime-local" class="form-input" id="endDate" required>
-                        <div class="error-message" id="endError">Please select an end date</div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Location</label>
-                    <input type="text" class="form-input" id="location" placeholder="Event location">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <textarea class="form-textarea" id="description" placeholder="Event details"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Created by</label>
-                    <input type="text" class="form-input" id="createdByName" readonly style="background: #222; color: #888;">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Event Image</label>
-                    <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
-                        <div id="uploadText">
-                            <div style="font-size: 24px; margin-bottom: 8px;">📷</div>
-                            <div>Click to upload image or drag and drop</div>
-                            <div style="font-size: 12px; color: #888; margin-top: 4px;">PNG, JPG up to 5MB</div>
-                        </div>
-                        <div id="imagePreview" style="display: none;"></div>
-                    </div>
-                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-cancel" onclick="closeEventModal()">Cancel</button>
-                <button class="btn btn-primary" id="saveEventBtn" onclick="saveEvent()">Create Event</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Event Preview Modal -->
-    <div id="eventPreviewModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="previewEventTitle">Event Details</div>
-                <button class="close-btn" onclick="closeEventPreviewModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="previewEventImage" style="margin-bottom: 20px;"></div>
-                
-                <div class="preview-info">
-                    <div class="preview-field">
-                        <span class="preview-label">📅 Start:</span>
-                        <span id="previewEventStart"></span>
-                    </div>
-                    
-                    <div class="preview-field">
-                        <span class="preview-label">🏁 End:</span>
-                        <span id="previewEventEnd"></span>
-                    </div>
-                    
-                    <div class="preview-field">
-                        <span class="preview-label">📍 Location:</span>
-                        <span id="previewEventLocation"></span>
-                    </div>
-                    
-                    <div class="preview-field">
-                        <span class="preview-label">📝 Description:</span>
-                        <span id="previewEventDescription"></span>
-                    </div>
-                    
-                    <div class="preview-field">
-                        <span class="preview-label">👤 Created by:</span>
-                        <span id="previewEventCreator"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <div id="eventOwnerControls" style="display: none; gap: 10px;">
-                    <button class="btn btn-secondary" onclick="editCurrentEvent()">Edit Event</button>
-                    <button class="btn btn-danger" onclick="deleteCurrentEvent()">Delete Event</button>
-                </div>
-                <button class="btn btn-cancel" onclick="closeEventPreviewModal()">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Terms of Service Modal -->
-    <div id="termsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Terms of Service</div>
-                <button class="close-btn" onclick="closeTermsModal()">&times;</button>
-            </div>
-            <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
-                <h4 style="color: #ffd700; margin-bottom: 15px;">Acceptance of Terms</h4>
-                <p style="margin-bottom: 15px;">By using The Black Experience Community Calendar, you agree to these Terms of Service and all applicable laws and regulations.</p>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">Event Posting Guidelines</h4>
-                <ul style="margin-bottom: 15px; padding-left: 20px;">
-                    <li>Events must be community-appropriate and family-friendly</li>
-                    <li>No hate speech, discrimination, or offensive content</li>
-                    <li>No illegal activities or inappropriate solicitation</li>
-                    <li>Commercial events must benefit the community</li>
-                    <li>Accurate information required - false events will be removed</li>
-                </ul>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">Liability Disclaimer</h4>
-                <p style="margin-bottom: 15px;"><strong>The Black Experience Community Calendar and BXE LLC are not responsible for:</strong></p>
-                <ul style="margin-bottom: 15px; padding-left: 20px;">
-                    <li>Events posted by community members</li>
-                    <li>Event cancellations, changes, or inaccuracies</li>
-                    <li>Any damages, injuries, or losses related to attended events</li>
-                    <li>Third-party content or external links</li>
-                    <li>User interactions or disputes</li>
-                </ul>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">User Responsibilities</h4>
-                <p style="margin-bottom: 15px;">You are solely responsible for:</p>
-                <ul style="margin-bottom: 15px; padding-left: 20px;">
-                    <li>The accuracy of your event information</li>
-                    <li>Compliance with all applicable laws</li>
-                    <li>Your own safety when attending events</li>
-                    <li>Verifying event details before attending</li>
-                </ul>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">Moderation Rights</h4>
-                <p style="margin-bottom: 15px;">We reserve the right to remove any content that violates our guidelines without notice. Repeated violations may result in account suspension.</p>
-                
-                <p style="font-size: 12px; color: #888; margin-top: 20px;">Last updated: September 2025</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="closeTermsModal()">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Community Guidelines Modal -->
-    <div id="guidelinesModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Community Guidelines</div>
-                <button class="close-btn" onclick="closeGuidelinesModal()">&times;</button>
-            </div>
-            <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
-                <h4 style="color: #ffd700; margin-bottom: 15px;">Our Community Values</h4>
-                <p style="margin-bottom: 15px;">The Black Experience Community Calendar celebrates and supports our community through shared events and experiences. All content should reflect these values:</p>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">✅ Encouraged Content</h4>
-                <ul style="margin-bottom: 15px; padding-left: 20px; color: #28a745;">
-                    <li>Educational workshops and seminars</li>
-                    <li>Cultural celebrations and performances</li>
-                    <li>Business networking and professional development</li>
-                    <li>Community service and volunteer opportunities</li>
-                    <li>Family-friendly entertainment</li>
-                    <li>Health and wellness activities</li>
-                    <li>Arts, music, and creative events</li>
-                    <li>Youth and senior programs</li>
-                </ul>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">❌ Prohibited Content</h4>
-                <ul style="margin-bottom: 15px; padding-left: 20px; color: #dc3545;">
-                    <li>Hate speech or discriminatory language</li>
-                    <li>Adult or inappropriate content</li>
-                    <li>Political campaigning or partisan content</li>
-                    <li>Illegal activities or substances</li>
-                    <li>Spam or excessive self-promotion</li>
-                    <li>False or misleading information</li>
-                    <li>Events that exclude based on protected characteristics</li>
-                    <li>Dangerous or harmful activities</li>
-                </ul>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">Event Quality Standards</h4>
-                <ul style="margin-bottom: 15px; padding-left: 20px;">
-                    <li>Provide complete and accurate event details</li>
-                    <li>Include clear start/end times and location</li>
-                    <li>Use appropriate, high-quality images</li>
-                    <li>Update or cancel events promptly if needed</li>
-                    <li>Respond to community questions respectfully</li>
-                </ul>
-                
-                <h4 style="color: #ffd700; margin-bottom: 15px;">Reporting Issues</h4>
-                <p style="margin-bottom: 15px;">If you see content that violates these guidelines, please contact our administrators. We review all reports promptly and take appropriate action.</p>
-                
-                <p style="background: #3a3a3a; padding: 15px; border-radius: 8px; border-left: 4px solid #ffd700;">
-                    <strong>Remember:</strong> This calendar represents our community. Help us maintain a positive, welcoming space for everyone.
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="closeGuidelinesModal()">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Global variables
-        let events = [];
-        let currentDate = new Date();
-        let today = new Date();
-        let currentUser = null;
-        let userProfile = null;
-        let isSignUpMode = false;
-        let currentSearchQuery = '';
-        let isAdmin = false;
-        let uploadedImage = null;
-        let currentEventId = null;
-        let editingEventId = null;
-
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-        // Admin email addresses
-        const ADMIN_EMAILS = [
-            '97franchise@gmail.com',
-            'afgarner@bxellc.com',
-            'craigdbarnes@gmail.com'
-        ];
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            setupRealTimeDate();
-            setupAuthStateListener();
-            setupEventListeners();
-            setupImageUpload();
-            setupSearch();
-            loadEventsFromFirebase();
-        });
-
-        // Setup real-time date tracking for Central Time
-        function setupRealTimeDate() {
-            updateCurrentTime();
-            setInterval(updateCurrentTime, 60000);
-            
-            document.addEventListener('visibilitychange', function() {
-                if (!document.hidden) {
-                    updateCurrentTime();
-                }
-            });
-        }
-
-        function updateCurrentTime() {
-            const now = new Date();
-            const centralTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Chicago"}));
-            
-            const previousDay = today.getDate();
-            today = centralTime;
-            
-            if (today.getDate() !== previousDay && 
-                currentDate.getMonth() === today.getMonth() && 
-                currentDate.getFullYear() === today.getFullYear()) {
-                renderCalendar();
-            }
-            
-            if (!currentDate || Math.abs(currentDate - now) > 24 * 60 * 60 * 1000) {
-                currentDate = new Date(today);
-            }
-        }
-
-        // Auth state listener
-        function setupAuthStateListener() {
-            auth.onAuthStateChanged(async (user) => {
-                currentUser = user;
-                
-                if (user) {
-                    isAdmin = ADMIN_EMAILS.includes(user.email);
-                    await checkUserProfile();
-                    updateAuthUI(true);
-                } else {
-                    userProfile = null;
-                    isAdmin = false;
-                    updateAuthUI(false);
-                }
-                
-                renderCalendar();
-                updateUpcomingEvents();
-            });
-        }
-
-        async function checkUserProfile() {
-            if (!currentUser) return;
-            
-            try {
-                const profileDoc = await db.collection('profiles').doc(currentUser.uid).get();
-                
-                if (profileDoc.exists) {
-                    userProfile = profileDoc.data();
-                    updateAuthButton('authenticated');
-                } else {
-                    userProfile = null;
-                    updateAuthButton('needs_onboarding');
-                }
-            } catch (error) {
-                console.error('Error checking user profile:', error);
-                userProfile = null;
-                updateAuthButton('needs_onboarding');
-            }
-        }
-
-        function updateAuthUI(isAuthenticated) {
-            const userInfo = document.getElementById('userInfo');
-            const userName = document.getElementById('userName');
-            const privacyLink = document.getElementById('privacyLink');
-            
-            if (isAuthenticated && userProfile) {
-                userInfo.style.display = 'flex';
-                userName.innerHTML = userProfile.full_name + (isAdmin ? '<span class="admin-badge">ADMIN</span>' : '');
-                if (privacyLink) privacyLink.style.display = 'inline-block';
-            } else {
-                userInfo.style.display = 'none';
-                if (privacyLink) privacyLink.style.display = 'none';
-            }
-        }
-
-        function updateAuthButton(state) {
-            const authButton = document.getElementById('authButton');
-            
-            switch (state) {
-                case 'unauthenticated':
-                    authButton.textContent = 'Log in to post';
-                    authButton.className = 'btn btn-auth';
-                    break;
-                case 'needs_onboarding':
-                    authButton.textContent = 'Finish setup';
-                    authButton.className = 'btn btn-primary';
-                    break;
-                case 'authenticated':
-                    authButton.textContent = 'Post an event';
-                    authButton.className = 'btn btn-primary';
-                    break;
-            }
-        }
-
-        function handleAuthButtonClick() {
-            if (!currentUser) {
-                openAuthModal();
-            } else if (!userProfile) {
-                openOnboardingModal();
-            } else {
-                openEventModal();
-            }
-        }
-
-        // Auth modal functions
-        function openAuthModal() {
-            document.getElementById('authModal').classList.add('show');
-        }
-
-        function closeAuthModal() {
-            document.getElementById('authModal').classList.remove('show');
-            document.getElementById('authForm').reset();
-        }
-
-        function toggleAuthMode() {
-            isSignUpMode = !isSignUpMode;
-            
-            const title = document.getElementById('authModalTitle');
-            const toggleText = document.getElementById('authToggleText');
-            const toggleLink = document.getElementById('authToggleLink');
-            const submitBtn = document.getElementById('authSubmitBtn');
-            
-            if (isSignUpMode) {
-                title.textContent = 'Sign Up';
-                toggleText.textContent = 'Already have an account?';
-                toggleLink.textContent = 'Log in';
-                submitBtn.textContent = 'Sign Up';
-            } else {
-                title.textContent = 'Log In';
-                toggleText.textContent = "Don't have an account?";
-                toggleLink.textContent = 'Sign up';
-                submitBtn.textContent = 'Log In';
-            }
-        }
-
-        async function handleAuthSubmit(event) {
-            event.preventDefault();
-            
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
-            const submitBtn = document.getElementById('authSubmitBtn');
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = isSignUpMode ? 'Signing up...' : 'Logging in...';
-            
-            try {
-                if (isSignUpMode) {
-                    await auth.createUserWithEmailAndPassword(email, password);
-                } else {
-                    await auth.signInWithEmailAndPassword(email, password);
-                }
-                
-                closeAuthModal();
-                showToast(isSignUpMode ? 'Account created successfully!' : 'Logged in successfully!');
-            } catch (error) {
-                console.error('Auth error:', error);
-                showToast(error.message, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = isSignUpMode ? 'Sign Up' : 'Log In';
-            }
-        }
-
-        async function signInWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            
-            try {
-                await auth.signInWithPopup(provider);
-                closeAuthModal();
-                showToast('Logged in with Google successfully!');
-            } catch (error) {
-                console.error('Google sign-in error:', error);
-                showToast(error.message, 'error');
-            }
-        }
-
-        async function logout() {
-            try {
-                await auth.signOut();
-                showToast('Logged out successfully!');
-                updateAuthButton('unauthenticated');
-            } catch (error) {
-                console.error('Logout error:', error);
-                showToast(error.message, 'error');
-            }
-        }
-
-        // Onboarding modal functions
-        function openOnboardingModal() {
-            document.getElementById('onboardingModal').classList.add('show');
-            
-            if (currentUser) {
-                if (currentUser.displayName) {
-                    document.getElementById('fullName').value = currentUser.displayName;
-                }
-                if (currentUser.email) {
-                    document.getElementById('contactEmail').value = currentUser.email;
-                }
-            }
-        }
-
-        function closeOnboardingModal() {
-            document.getElementById('onboardingModal').classList.remove('show');
-            document.getElementById('onboardingForm').reset();
-        }
-
-        async function handleOnboardingSubmit(event) {
-            event.preventDefault();
-            
-            if (!currentUser) return;
-            
-            const submitBtn = document.getElementById('onboardingSubmitBtn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating profile...';
-            
-            const profileData = {
-                uid: currentUser.uid,
-                full_name: document.getElementById('fullName').value.trim(),
-                phone_number: document.getElementById('phoneNumber').value.trim(),
-                contact_email: document.getElementById('contactEmail').value.trim(),
-                company_name: document.getElementById('companyName').value.trim(),
-                created_at: firebase.firestore.FieldValue.serverTimestamp(),
-                updated_at: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            
-            try {
-                await db.collection('profiles').doc(currentUser.uid).set(profileData);
-                userProfile = profileData;
-                
-                closeOnboardingModal();
-                updateAuthButton('authenticated');
-                updateAuthUI(true);
-                showToast('Profile created successfully!');
-            } catch (error) {
-                console.error('Error creating profile:', error);
-                showToast('Failed to create profile. Please try again.', 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Complete Setup';
-            }
-        }
-
-        // Terms and Guidelines modal functions
-        function showTermsModal() {
-            document.getElementById('termsModal').classList.add('show');
-        }
-
-        function closeTermsModal() {
-            document.getElementById('termsModal').classList.remove('show');
-        }
-
-        function showGuidelinesModal() {
-            document.getElementById('guidelinesModal').classList.add('show');
-        }
-
-        function closeGuidelinesModal() {
-            document.getElementById('guidelinesModal').classList.remove('show');
-        }
-
-        // Data deletion placeholder function
-        function showDataDeletionOptions() {
-            alert('Data deletion options coming soon. Contact support for immediate assistance.');
-        }
-
-        // Setup search
-        function setupSearch() {
-            const searchInput = document.getElementById('searchInput');
-            searchInput.addEventListener('input', function(e) {
-                currentSearchQuery = e.target.value.trim();
-                updateUpcomingEvents();
-            });
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('modal')) {
-                    if (e.target.id === 'authModal') closeAuthModal();
-                    if (e.target.id === 'onboardingModal') closeOnboardingModal();
-                    if (e.target.id === 'eventModal') closeEventModal();
-                    if (e.target.id === 'eventPreviewModal') closeEventPreviewModal();
-                    if (e.target.id === 'termsModal') closeTermsModal();
-                    if (e.target.id === 'guidelinesModal') closeGuidelinesModal();
-                }
-            });
-        }
-
-        // Setup image upload
-        function setupImageUpload() {
-            const imageUpload = document.getElementById('imageUpload');
-            if (imageUpload) {
-                imageUpload.addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-                    if (!file) return;
-
-                    if (!file.type.startsWith('image/')) {
-                        showToast('Please select an image file', 'error');
-                        return;
-                    }
-
-                    if (file.size > 5 * 1024 * 1024) {
-                        showToast('Image must be smaller than 5MB', 'error');
-                        return;
-                    }
-
-                    uploadImageToStorage(file);
-                });
-            }
-        }
-
-        async function uploadImageToStorage(file) {
-            try {
-                const uploadText = document.getElementById('uploadText');
-                uploadText.innerHTML = '<div style="color: #ffd700;">Uploading image...</div>';
-                
-                const timestamp = Date.now();
-                const fileName = `event-images/${timestamp}_${file.name}`;
-                const storageRef = storage.ref(fileName);
-                
-                const snapshot = await storageRef.put(file);
-                const downloadURL = await snapshot.ref.getDownloadURL();
-                
-                uploadedImage = downloadURL;
-                showImagePreview(downloadURL);
-                showToast('Image uploaded successfully!');
-            } catch (error) {
-                console.error('Error uploading image:', error);
-                showToast('Failed to upload image. Please try again.', 'error');
-                resetImageUpload();
-            }
-        }
-
-        function showImagePreview(imageSrc) {
-            const uploadArea = document.querySelector('.upload-area');
-            const uploadText = document.getElementById('uploadText');
-            const imagePreview = document.getElementById('imagePreview');
-
-            if (uploadArea && uploadText && imagePreview) {
-                uploadArea.classList.add('has-image');
-                uploadText.style.display = 'none';
-                imagePreview.style.display = 'block';
-                imagePreview.innerHTML = `
-                    <img src="${imageSrc}" class="image-preview" alt="Event image">
-                    <div style="padding: 10px; color: #28a745; font-size: 14px;">✓ Image ready</div>
-                `;
-            }
-        }
-
-        function resetImageUpload() {
-            const uploadArea = document.querySelector('.upload-area');
-            const uploadText = document.getElementById('uploadText');
-            const imagePreview = document.getElementById('imagePreview');
-            const imageUpload = document.getElementById('imageUpload');
-
-            if (uploadArea) uploadArea.classList.remove('has-image');
-            if (uploadText) {
-                uploadText.style.display = 'block';
-                uploadText.innerHTML = `
-                    <div style="font-size: 24px; margin-bottom: 8px;">📷</div>
-                    <div>Click to upload image or drag and drop</div>
-                    <div style="font-size: 12px; color: #888; margin-top: 4px;">PNG, JPG up to 5MB</div>
-                `;
-            }
-            if (imagePreview) {
-                imagePreview.style.display = 'none';
-                imagePreview.innerHTML = '';
-            }
-            if (imageUpload) imageUpload.value = '';
-            uploadedImage = null;
-        }
-
-        // Load events from Firebase
-        function loadEventsFromFirebase() {
-            db.collection('events')
-                .orderBy('start', 'asc')
-                .get()
-                .then((querySnapshot) => {
-                    events = [];
-                    querySnapshot.forEach((doc) => {
-                        events.push({ id: doc.id, ...doc.data() });
-                    });
-                    renderCalendar();
-                    updateUpcomingEvents();
-                })
-                .catch((error) => {
-                    console.error("Error loading events: ", error);
-                    renderCalendar();
-                    updateUpcomingEvents();
-                });
-        }
-
-        // Render calendar
-        function renderCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            const monthYear = document.getElementById('monthYear');
-            
-            monthYear.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-            grid.innerHTML = '';
-
-            dayNames.forEach(day => {
-                const header = document.createElement('div');
-                header.className = 'day-header';
-                header.textContent = day;
-                grid.appendChild(header);
-            });
-
-            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-            const startDate = new Date(firstDay);
-            startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-            for (let i = 0; i < 42; i++) {
-                const cellDate = new Date(startDate);
-                cellDate.setDate(startDate.getDate() + i);
-                
-                const dayCell = document.createElement('div');
-                dayCell.className = 'calendar-day';
-                
-                if (cellDate.getMonth() !== currentDate.getMonth()) {
-                    dayCell.classList.add('other-month');
-                }
-                
-                if (isSameDay(cellDate, today)) {
-                    dayCell.classList.add('today');
-                }
-
-                dayCell.innerHTML = `
-                    <div class="day-number">${cellDate.getDate()}</div>
-                    <div class="events"></div>
-                `;
-
-                if (cellDate.getMonth() === currentDate.getMonth() && currentUser && userProfile) {
-                    dayCell.addEventListener('click', function(e) {
-                        if (e.target === dayCell || e.target.classList.contains('day-number')) {
-                            openEventModal(cellDate);
-                        }
-                    });
-                }
-
-                const dayEvents = getEventsForDay(cellDate);
-                const eventsContainer = dayCell.querySelector('.events');
-                
-                dayEvents.forEach(event => {
-                    const eventElement = document.createElement('div');
-                    eventElement.className = 'event';
-                    eventElement.style.position = 'relative';
-                    eventElement.textContent = event.title;
-                    
-                    if (isAdmin) {
-                        const adminControls = document.createElement('div');
-                        adminControls.className = 'admin-controls';
-                        
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.className = 'admin-delete-btn';
-                        deleteBtn.textContent = '×';
-                        deleteBtn.title = 'Delete event (Admin)';
-                        deleteBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            adminDeleteEvent(event.id, event.title);
-                        };
-                        
-                        adminControls.appendChild(deleteBtn);
-                        eventElement.appendChild(adminControls);
-                        
-                        eventElement.addEventListener('mouseenter', () => {
-                            adminControls.classList.add('show');
-                        });
-                        eventElement.addEventListener('mouseleave', () => {
-                            adminControls.classList.remove('show');
-                        });
-                    }
-                    
-                    eventElement.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        showEventDetails(event);
-                    });
-
-                    eventsContainer.appendChild(eventElement);
-                });
-
-                grid.appendChild(dayCell);
-            }
-        }
-
-        function getEventsForDay(date) {
-            return events.filter(event => {
-                const eventDate = new Date(event.start);
-                return isSameDay(eventDate, date);
-            });
-        }
-
-        function isSameDay(date1, date2) {
-            return date1.getDate() === date2.getDate() &&
-                   date1.getMonth() === date2.getMonth() &&
-                   date1.getFullYear() === date2.getFullYear();
-        }
-
-        // Update upcoming events
-        function updateUpcomingEvents() {
-            const container = document.getElementById('upcomingEvents');
-            const centralTimeNow = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Chicago"}));
-            
-            let upcomingEvents = events
-                .filter(event => new Date(event.start) > centralTimeNow)
-                .sort((a, b) => new Date(a.start) - new Date(b.start));
-
-            if (currentSearchQuery) {
-                const searchLower = currentSearchQuery.toLowerCase();
-                upcomingEvents = upcomingEvents.filter(event => {
-                    const title = (event.title || '').toLowerCase();
-                    const description = (event.description || '').toLowerCase();
-                    const location = (event.location || '').toLowerCase();
-                    
-                    return title.includes(searchLower) ||
-                           description.includes(searchLower) ||
-                           location.includes(searchLower);
-                });
-                
-                if (upcomingEvents.length === 0) {
-                    container.innerHTML = `
-                        <div class="no-events">
-                            <p>No events found</p>
-                            <p style="font-size: 12px;">Try a different search term</p>
-                        </div>
-                    `;
-                    return;
-                }
-            } else {
-                upcomingEvents = upcomingEvents.slice(0, 5);
-            }
-
-            if (upcomingEvents.length === 0) {
-                container.innerHTML = `
-                    <div class="no-events">
-                        <p>📅 No upcoming events</p>
-                        <p style="font-size: 12px;">Be the first to create an event!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = upcomingEvents.map(event => {
-                const adminDeleteBtn = isAdmin ? 
-                    `<button class="admin-delete-btn" onclick="event.stopPropagation(); adminDeleteEvent('${event.id}', '${event.title.replace(/'/g, "\\'")}');" title="Delete event (Admin)" style="position: absolute; top: 5px; right: 5px;">×</button>` : '';
-                
-                const imageHtml = event.image_url ? 
-                    `<img src="${event.image_url}" class="upcoming-event-image" alt="${event.title}">` : '';
-                
-                return `
-                    <div class="upcoming-event" onclick="showEventDetails(${JSON.stringify(event).replace(/"/g, '&quot;')})" style="position: relative;">
-                        ${adminDeleteBtn}
-                        <div class="upcoming-event-content">
-                            <div class="upcoming-event-title">${event.title}</div>
-                            <div class="upcoming-event-date">${formatEventDate(event.start)}</div>
-                            <div class="upcoming-event-creator">by ${event.created_by_name}</div>
-                        </div>
-                        ${imageHtml}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function formatEventDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                timeZone: 'America/Chicago',
-                timeZoneName: 'short'
-            });
-        }
-
-        function showEventDetails(event) {
-            currentEventId = event.id;
-            
-            document.getElementById('eventPreviewModal').classList.add('show');
-            document.getElementById('previewEventTitle').textContent = event.title;
-            document.getElementById('previewEventStart').textContent = formatEventDate(event.start);
-            document.getElementById('previewEventEnd').textContent = formatEventDate(event.end);
-            document.getElementById('previewEventLocation').textContent = event.location || 'No location specified';
-            document.getElementById('previewEventDescription').textContent = event.description || 'No description provided';
-            document.getElementById('previewEventCreator').textContent = event.created_by_name;
-            
-            const imageContainer = document.getElementById('previewEventImage');
-            if (event.image_url) {
-                imageContainer.innerHTML = `<img src="${event.image_url}" class="preview-image" alt="Event image">`;
-                imageContainer.style.display = 'block';
-            } else {
-                imageContainer.style.display = 'none';
-            }
-            
-            const ownerControls = document.getElementById('eventOwnerControls');
-            if (currentUser && currentUser.uid === event.created_by_uid) {
-                ownerControls.style.display = 'flex';
-            } else {
-                ownerControls.style.display = 'none';
-            }
-        }
-
-        function closeEventPreviewModal() {
-            document.getElementById('eventPreviewModal').classList.remove('show');
-            currentEventId = null;
-        }
-
-        function editCurrentEvent() {
-            if (!currentEventId) return;
-            
-            const event = events.find(e => e.id === currentEventId);
-            if (!event) return;
-            
-            closeEventPreviewModal();
-            openEditEventModal(event);
-        }
-
-        function deleteCurrentEvent() {
-            if (!currentEventId) return;
-            
-            const event = events.find(e => e.id === currentEventId);
-            if (!event) return;
-            
-            if (confirm(`Are you sure you want to delete "${event.title}"?`)) {
-                deleteEventWithImage(currentEventId, event.image_url);
-            }
-            closeEventPreviewModal();
-        }
-
-        async function deleteEventWithImage(eventId, imageUrl) {
-            try {
-                await db.collection('events').doc(eventId).delete();
-                
-                if (imageUrl) {
-                    try {
-                        const imageRef = storage.refFromURL(imageUrl);
-                        await imageRef.delete();
-                    } catch (imageError) {
-                        console.warn('Could not delete image:', imageError);
-                    }
-                }
-                
-                showToast('Event deleted successfully!');
-                loadEventsFromFirebase();
-            } catch (error) {
-                console.error('Error deleting event:', error);
-                showToast('Failed to delete event. Please try again.', 'error');
-            }
-        }
-
-        // Navigation functions
-        function previousMonth() {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            renderCalendar();
-        }
-
-        function nextMonth() {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            renderCalendar();
-        }
-
-        function goToToday() {
-            currentDate = new Date(today);
-            renderCalendar();
-        }
-
-        // Event modal functions
-        function openEventModal(selectedDate = null) {
-            if (!currentUser || !userProfile) {
-                handleAuthButtonClick();
-                return;
-            }
-            
-            editingEventId = null;
-            document.getElementById('modalTitle').textContent = 'Create Event';
-            document.getElementById('saveEventBtn').textContent = 'Create Event';
-            
-            clearEventForm();
-            document.getElementById('createdByName').value = userProfile.full_name;
-            
-            if (selectedDate) {
-                const start = new Date(selectedDate);
-                start.setHours(9, 0);
-                const end = new Date(selectedDate);
-                end.setHours(10, 0);
-                
-                document.getElementById('startDate').value = formatDateTimeLocal(start);
-                document.getElementById('endDate').value = formatDateTimeLocal(end);
-            }
-            
-            document.getElementById('eventModal').classList.add('show');
-        }
-
-        function openEditEventModal(event) {
-            if (!currentUser || !userProfile) {
-                handleAuthButtonClick();
-                return;
-            }
-            
-            editingEventId = event.id;
-            document.getElementById('modalTitle').textContent = 'Edit Event';
-            document.getElementById('saveEventBtn').textContent = 'Update Event';
-            
-            document.getElementById('eventTitle').value = event.title;
-            document.getElementById('startDate').value = event.start;
-            document.getElementById('endDate').value = event.end;
-            document.getElementById('location').value = event.location || '';
-            document.getElementById('description').value = event.description || '';
-            document.getElementById('createdByName').value = event.created_by_name;
-            
-            if (event.image_url) {
-                uploadedImage = event.image_url;
-                showImagePreview(event.image_url);
-            } else {
-                resetImageUpload();
-            }
-            
-            document.getElementById('eventModal').classList.add('show');
-        }
-
-        function closeEventModal() {
-            document.getElementById('eventModal').classList.remove('show');
-            clearEventForm();
-            editingEventId = null;
-        }
-
-        function clearEventForm() {
-            document.getElementById('eventTitle').value = '';
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
-            document.getElementById('location').value = '';
-            document.getElementById('description').value = '';
-            document.getElementById('createdByName').value = '';
-            
-            resetImageUpload();
-            
-            const errorElements = document.querySelectorAll('.error-message');
-            const inputElements = document.querySelectorAll('.form-input, .form-select, .form-textarea');
-            
-            errorElements.forEach(error => error.classList.remove('show'));
-            inputElements.forEach(input => input.classList.remove('error'));
-        }
-
-        // Rate limiting variables
-        const RATE_LIMITS = {
-            events_per_hour: 5,
-            events_per_day: 20,
-            events_per_week: 50
-        };
-
-        // Check rate limits before allowing event creation
-        async function checkRateLimits(userId) {
-            try {
-                const now = new Date();
-                const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-                const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-                const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-                // Count recent events by this user
-                const recentEvents = await db.collection('events')
-                    .where('created_by_uid', '==', userId)
-                    .where('created_at', '>=', oneWeekAgo)
-                    .get();
-
-                let eventsLastHour = 0;
-                let eventsLastDay = 0;
-                let eventsLastWeek = recentEvents.size;
-
-                recentEvents.forEach(doc => {
-                    const eventTime = doc.data().created_at.toDate();
-                    if (eventTime >= oneHourAgo) eventsLastHour++;
-                    if (eventTime >= oneDayAgo) eventsLastDay++;
-                });
-
-                // Check limits
-                if (eventsLastHour >= RATE_LIMITS.events_per_hour) {
-                    throw new Error(`Rate limit exceeded: Maximum ${RATE_LIMITS.events_per_hour} events per hour. Please wait before creating another event.`);
-                }
-                if (eventsLastDay >= RATE_LIMITS.events_per_day) {
-                    throw new Error(`Rate limit exceeded: Maximum ${RATE_LIMITS.events_per_day} events per day. Please try again tomorrow.`);
-                }
-                if (eventsLastWeek >= RATE_LIMITS.events_per_week) {
-                    throw new Error(`Rate limit exceeded: Maximum ${RATE_LIMITS.events_per_week} events per week. Please try again later.`);
-                }
-
-                return true;
-            } catch (error) {
-                throw error;
-            }
-        }
-
-        async function saveEvent() {
-            if (!currentUser || !userProfile) {
-                showToast('You must be logged in to create events', 'error');
-                return;
-            }
-
-            if (!validateEventForm()) {
-                return;
-            }
-
-            const saveBtn = document.getElementById('saveEventBtn');
-            saveBtn.disabled = true;
-            saveBtn.textContent = editingEventId ? 'Updating...' : 'Creating...';
-
-            try {
-                // Check rate limits only for new events, not edits
-                if (!editingEventId) {
-                    await checkRateLimits(currentUser.uid);
-                }
-
-                const eventData = {
-                    title: document.getElementById('eventTitle').value.trim(),
-                    start: document.getElementById('startDate').value,
-                    end: document.getElementById('endDate').value,
-                    location: document.getElementById('location').value.trim(),
-                    description: document.getElementById('description').value.trim(),
-                    image_url: uploadedImage || null,
-                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                if (!editingEventId) {
-                    eventData.created_by_uid = currentUser.uid;
-                    eventData.created_by_name = userProfile.full_name;
-                    eventData.status = 'public';
-                    eventData.created_at = firebase.firestore.FieldValue.serverTimestamp();
-                }
-
-                if (editingEventId) {
-                    await db.collection('events').doc(editingEventId).update(eventData);
-                    showToast('Event updated successfully!');
-                } else {
-                    await db.collection('events').add(eventData);
-                    showToast('Event created successfully!');
-                }
-                
-                loadEventsFromFirebase();
-                closeEventModal();
-            } catch (error) {
-                console.error('Error saving event:', error);
-                if (error.message.includes('Rate limit exceeded')) {
-                    showToast(error.message, 'error');
-                } else if (error.code === 'permission-denied') {
-                    showToast('Rate limit exceeded. Please wait before creating another event.', 'error');
-                } else {
-                    showToast('Failed to save event. Please try again.', 'error');
-                }
-            } finally {
-                saveBtn.disabled = false;
-                saveBtn.textContent = editingEventId ? 'Update Event' : 'Create Event';
-            }
-        }
-
-        function validateEventForm() {
-            let isValid = true;
-            
-            const title = document.getElementById('eventTitle').value.trim();
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-
-            const errorElements = document.querySelectorAll('.error-message');
-            const inputElements = document.querySelectorAll('.form-input');
-            
-            errorElements.forEach(error => error.classList.remove('show'));
-            inputElements.forEach(input => input.classList.remove('error'));
-
-            if (!title) {
-                showFieldError('eventTitle', 'titleError', 'Please enter an event title');
-                isValid = false;
-            }
-
-            if (!startDate) {
-                showFieldError('startDate', 'startError', 'Please select a start date');
-                isValid = false;
-            }
-
-            if (!endDate) {
-                showFieldError('endDate', 'endError', 'Please select an end date');
-                isValid = false;
-            }
-
-            if (startDate && endDate) {
-                const start = new Date(startDate);
-                const end = new Date(endDate);
-                
-                if (end <= start) {
-                    showFieldError('endDate', 'endError', 'End date must be after start date');
-                    isValid = false;
-                }
-            }
-
-            return isValid;
-        }
-
-        function showFieldError(fieldId, errorId, message) {
-            const field = document.getElementById(fieldId);
-            const error = document.getElementById(errorId);
-            
-            field.classList.add('error');
-            error.textContent = message;
-            error.classList.add('show');
-        }
-
-        // Admin delete event function
-        function adminDeleteEvent(eventId, eventTitle) {
-            if (!isAdmin) {
-                showToast('Access denied. Admin privileges required.', 'error');
-                return;
-            }
-            
-            const reason = prompt(`Admin Action: Delete event "${eventTitle}"?\n\nOptional: Enter reason for deletion (will be logged):`);
-            
-            if (reason !== null) {
-                deleteEventWithReason(eventId, eventTitle, reason || 'No reason provided');
-            }
-        }
-
-        async function deleteEventWithReason(eventId, eventTitle, reason) {
-            try {
-                const event = events.find(e => e.id === eventId);
-                
-                await db.collection('admin_actions').add({
-                    action: 'delete_event',
-                    event_id: eventId,
-                    event_title: eventTitle,
-                    admin_email: currentUser.email,
-                    admin_name: userProfile.full_name,
-                    reason: reason,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                await db.collection('events').doc(eventId).delete();
-                
-                if (event && event.image_url) {
-                    try {
-                        const imageRef = storage.refFromURL(event.image_url);
-                        await imageRef.delete();
-                    } catch (imageError) {
-                        console.warn('Could not delete image:', imageError);
-                    }
-                }
-                
-                showToast(`Event "${eventTitle}" deleted by admin`);
-                loadEventsFromFirebase();
-            } catch (error) {
-                console.error('Error deleting event:', error);
-                showToast('Failed to delete event. Please try again.', 'error');
-            }
-        }
-
-        function formatDateTimeLocal(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
-
-        function showToast(message, type = 'success') {
-            const existing = document.querySelector('.success-toast');
-            if (existing) {
-                existing.remove();
-            }
-
-            const toast = document.createElement('div');
-            toast.className = `success-toast ${type === 'error' ? 'error-toast' : ''}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 100);
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => {
-                    if (toast.parentNode) {
-                        toast.parentNode.removeChild(toast);
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        function showHelp() {
-            alert('The Black Experience Community Calendar Help:\n\n' +
-                'Authentication:\n' +
-                '• Click "Log in to post" to create an account or sign in\n' +
-                '• Complete your profile setup after first login\n' +
-                '• Only authenticated users can create events\n\n' +
-                'Creating Events:\n' +
-                '• Click "Post an event" when logged in\n' +
-                '• Or click on any calendar date\n' +
-                '• Fill in required fields and save\n\n' +
-                'Viewing Events:\n' +
-                '• Click any event to see details\n' +
-                '• View upcoming events in the sidebar\n' +
-                '• Use search to find specific events\n\n' +
-                'Navigation:\n' +
-                '• Use arrow buttons to navigate months\n' +
-                '• "Today" button returns to current date\n\n' +
-                'Need help? Contact support!');
-        }
-
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-links">
-                <a href="https://bxellc.com/privacy-policy" target="_blank" class="footer-link">Privacy Policy</a>
-                <a href="https://bxellc.com/terms--conditions" target="_blank" class="footer-link">Terms & Agreement</a>
-                <a href="mailto:afgarner@bxellc.com" class="footer-link">Contact Us</a>
-            </div>
-            <div class="footer-copyright">
-                © 2025 BXE LLC. All rights reserved.<br>
-                Building community through shared experiences.
-            </div>
-        </div>
-    </div>
     </script>
 </body>
 </html>
