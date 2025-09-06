@@ -607,7 +607,7 @@
             color: #b0b0b0;
             line-height: 1.4;
         }
-      /* EMERGENCY MOBILE FIX - Add this to your CSS */
+       /* EMERGENCY MOBILE FIX - Add this to your CSS */
 
 /* Force ALL elements to respect viewport width */
 * {
@@ -770,22 +770,45 @@
     }
 }
 
-/* Extra fix for very narrow screens */
+/* Extra fix for very narrow screens like yours (220px) */
 @media (max-width: 320px) {
     .container {
-        padding: 2px !important;
+        padding: 1px !important;
+    }
+    
+    .calendar-container {
+        padding: 0 1px !important;
     }
     
     .calendar-grid {
+        gap: 0px !important; /* No gaps on tiny screens */
         max-width: calc(100vw - 2px) !important;
-        gap: 0px !important;
+    }
+    
+    .day-header {
+        font-size: 7px !important;
+        padding: 2px 0px !important;
+        min-height: 18px !important;
+    }
+    
+    .calendar-day {
+        min-height: 35px !important;
+        padding: 1px !important;
+    }
+    
+    .day-number {
+        font-size: 8px !important;
+    }
+    
+    .event {
+        font-size: 5px !important; /* Tiny but still readable */
+        padding: 0px 1px !important;
     }
     
     .logo {
-        font-size: 12px !important;
+        font-size: 11px !important;
     }
 }
-
     /* Images and content inside calendar days */
     .calendar-day img,
     .calendar-day svg {
