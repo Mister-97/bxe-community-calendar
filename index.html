@@ -607,199 +607,238 @@
             color: #b0b0b0;
             line-height: 1.4;
         }
-        /* Mobile Responsive Styles */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
+        /* Mobile Responsive Styles - Fixed Version */
+@media (max-width: 768px) {
+    /* Ensure body and html don't cause overflow */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+        max-width: 100vw;
+    }
 
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-                padding: 15px;
-            }
+    .container {
+        padding: 10px;
+        width: 100%;
+        max-width: 100vw;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
 
-            .header-controls {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 12px;
-            }
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 15px;
+        width: 100%;
+        box-sizing: border-box;
+    }
 
-            .user-info {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-                order: -1;
-            }
+    .header-controls {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
 
-            .user-settings {
-                margin-top: 8px;
-            }
+    .user-info {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        order: -1;
+    }
 
-            /* Stack header buttons vertically */
-            .header-controls > .btn {
-                width: 200px;
-                max-width: 90vw;
-            }
+    .user-settings {
+        margin-top: 8px;
+    }
 
-            .calendar-header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-                padding: 12px;
-            }
+    /* Stack header buttons vertically */
+    .header-controls > .btn {
+        width: 200px;
+        max-width: 90vw;
+    }
 
-            .calendar-nav {
-                justify-content: center;
-                gap: 15px;
-            }
+    .calendar-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 12px;
+        width: 100%;
+        box-sizing: border-box;
+    }
 
-            .controls {
-                justify-content: center;
-            }
+    .calendar-nav {
+        justify-content: center;
+        gap: 15px;
+    }
 
-           .calendar-container {
-                margin: 0;            /* remove the negative margins causing overflow */
-                width: 100%;
-                max-width: 100%;      /* avoid 100vw on layout blocks */
-                box-sizing: border-box;
-                overflow-x: clip;     /* guard against any tiny off-by-1px overflow */
-                padding: 0 10px;      /* optional: keep the same visual spacing you wanted */
-                }
-                
-                /* If you only want this change on phones */
-            @media (max-width: 480px) {
-            .calendar-container {
-                margin: 0;
-                padding: 0 10px;
-                max-width: 100%;
-                }
-            }
+    .controls {
+        justify-content: center;
+    }
 
-           .calendar-grid {
-                display: grid;
-                width: 100%;
-                max-width: 100%;                        /* ← avoid 100vw overflow */
-                grid-template-columns: repeat(7, minmax(0, 1fr));
-                grid-auto-rows: minmax(48px, auto);
-                gap: 1px;
-                background-color: #404040;
-                box-sizing: border-box;
-                }
-                
-                /* critical: let items shrink and wrap */
-            .day-header,
-            .calendar-day,
-            .event { 
-                min-width: 0; 
-                white-space: normal;
-                word-break: break-word;
-                }
-                
-                /* images/badges inside events shouldn't overflow */
-                .calendar-day img,
-                .calendar-day svg { 
-                  max-width: 100%; 
-                  height: auto; 
-                }
-                
-                /* safety net for tiny off-by-1px cases */
-                html, body { overflow-x: hidden; 
-            }
+    /* FIXED: Calendar container with proper constraints */
+    .calendar-container {
+        margin: 0;
+        width: 100%;
+        max-width: 100vw;
+        padding: 0 5px; /* Reduced padding to give more space */
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
 
+    /* FIXED: Calendar grid with better sizing */
+    .calendar-grid {
+        display: grid;
+        width: 100%;
+        max-width: calc(100vw - 10px); /* Account for container padding */
+        grid-template-columns: repeat(7, 1fr); /* Removed minmax for better mobile behavior */
+        grid-auto-rows: minmax(48px, auto);
+        gap: 1px;
+        background-color: #404040;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
 
-            .day-header {
-                padding: 8px 4px;
-                font-size: 11px;
-                background: #3a3a3a;
-            }
+    /* FIXED: Day headers and cells with proper constraints */
+    .day-header {
+        padding: 6px 2px; /* Reduced padding */
+        font-size: 10px;
+        background: #3a3a3a;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
-            .calendar-day {
-                min-height: 60px;
-                padding: 4px;
-                border: none;
-                background: #2d2d2d;
-            }
+    .calendar-day {
+        min-height: 50px;
+        padding: 2px; /* Reduced padding */
+        border: none;
+        background: #2d2d2d;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
 
-            .day-number {
-                font-size: 12px;
-                margin-bottom: 2px;
-            }
+    .day-number {
+        font-size: 11px;
+        margin-bottom: 2px;
+        line-height: 1;
+    }
 
-            .event {
-                font-size: 9px;
-                padding: 1px 3px;
-                margin-bottom: 1px;
-                line-height: 1.1;
-                -webkit-line-clamp: 1;
-            }
+    /* FIXED: Events with better text handling */
+    .event {
+        font-size: 8px; /* Smaller font for mobile */
+        padding: 1px 2px;
+        margin-bottom: 1px;
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        box-sizing: border-box;
+        display: block;
+    }
 
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
+    /* Images and content inside calendar days */
+    .calendar-day img,
+    .calendar-day svg {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
 
-            .modal-footer {
-                justify-content: center;
-                flex-direction: column;
-                gap: 10px;
-            }
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
 
-            .modal-footer .btn {
-                width: 100%;
-                max-width: 200px;
-            }
+    .modal-footer {
+        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+    }
 
-            .preview-field {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
+    .modal-footer .btn {
+        width: 100%;
+        max-width: 200px;
+    }
 
-            .preview-label {
-                min-width: auto;
-            }
+    .preview-field {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
 
-            .upcoming-event {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 10px;
-            }
+    .preview-label {
+        min-width: auto;
+    }
 
-            .upcoming-event-image {
-                width: 100%;
-                height: 120px;
-                max-width: 200px;
-            }
-            
-            /* Compact typography on small screens */
-            @media (max-width: 420px) {
-            .day-header { padding: 6px 2px; font-size: 10px; }
-            .calendar-day { padding: 3px; }
-            .day-number { font-size: 11px; margin-bottom: 2px; }
-            .event { font-size: 9px; line-height: 1.1; -webkit-line-clamp: 1; }
-            }
-            
-            /* Footer improvements */
-            .footer-links {
-                flex-direction: column;
-                gap: 10px;
-                align-items: center;
-            }
+    .upcoming-event {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+    }
 
-            .footer-link {
-                width: 200px;
-                text-align: center;
-                padding: 10px;
-                background: rgba(0, 0, 0, 0.1);
-                border-radius: 6px;
-            }
-        }
+    .upcoming-event-image {
+        width: 100%;
+        height: 120px;
+        max-width: 200px;
+    }
 
+    /* Footer improvements */
+    .footer-links {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .footer-link {
+        width: 200px;
+        text-align: center;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 6px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 420px) {
+    .calendar-container {
+        padding: 0 2px; /* Even less padding on very small screens */
+    }
+    
+    .calendar-grid {
+        max-width: calc(100vw - 4px);
+        gap: 0.5px; /* Smaller gap */
+    }
+    
+    .day-header {
+        padding: 4px 1px;
+        font-size: 9px;
+    }
+    
+    .calendar-day {
+        padding: 1px;
+        min-height: 45px;
+    }
+    
+    .day-number {
+        font-size: 10px;
+        margin-bottom: 1px;
+    }
+    
+    .event {
+        font-size: 7px;
+        padding: 1px;
+    }
+}
+        
         /* Sidebar */
         .sidebar {
             background: #2d2d2d;
