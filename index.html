@@ -662,7 +662,7 @@
             }
 
             .calendar-container {
-                width: 50%;
+                width: 500%;
                 max-width: 100vw;      /* never wider than the phone */
                 overflow-x: hidden;    /* hide any accidental overflow */
             }
@@ -670,11 +670,14 @@
             .calendar-grid {
                 display: grid;
                 width: 100%;
-                max-width: 100%;
-                grid-template-columns: repeat(7, minmax(0, 1fr)); /* allow columns to shrink */
-                grid-auto-rows: minmax(48px, auto);
-                gap: 1px;
-                background: #404040;
+                max-width: 100vw;                     /* prevent overflow on small screens */
+                grid-template-columns: repeat(7, minmax(0, 1fr)); 
+              /* minmax(0, 1fr) allows columns to shrink properly */
+  
+                grid-auto-rows: minmax(48px, auto);   /* rows adapt but won’t collapse too small */
+                gap: 1px;                             /* spacing between cells */
+                background-color: #404040;            /* clearer naming than just background */
+                box-sizing: border-box;               /* keeps padding/borders predictable */
             }
 
             .day-header {
