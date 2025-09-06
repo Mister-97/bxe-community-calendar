@@ -661,6 +661,9 @@
                 justify-content: center;
             }
 
+            *,
+            *::before,
+            *::after { box-sizing: border-box; }
             /* Make calendar fit screen width */
             .calendar-container {
                 width: 100%;
@@ -709,10 +712,6 @@
                 padding: 1px 3px;
                 margin-bottom: 1px;
                 line-height: 1.1;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: normal;          /* allow wrapping (avoid nowrap) */
-                word-break: break-word;       /* break long words if needed */
                 -webkit-line-clamp: 1;
             }
 
