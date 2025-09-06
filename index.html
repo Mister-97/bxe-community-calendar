@@ -607,7 +607,7 @@
             color: #b0b0b0;
             line-height: 1.4;
         }
-       /* Mobile Responsive Styles - Fixed Header with Horizontal Scroll */
+    /* Mobile Responsive Styles - Fixed Yellow Header with Horizontal Scroll */
 @media (max-width: 768px) {
     /* Ensure body and html don't cause overflow */
     html, body {
@@ -658,20 +658,27 @@
         max-width: 90vw;
     }
 
-    /* FIXED HEADER SECTION - Monthly navigator and controls stay centered */
+    /* FIXED YELLOW HEADER SECTION - Monthly navigator stays centered and fixed */
     .calendar-header {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background: inherit;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
+        background: #FFD700 !important; /* Your yellow color */
         flex-direction: column;
         gap: 15px;
         text-align: center;
-        padding: 12px;
-        width: 100%;
+        padding: 15px !important;
+        width: 100% !important;
         box-sizing: border-box;
-        /* Keep header centered and non-scrollable */
-        margin: 0 auto;
+        margin: 0 -10px 10px -10px !important; /* Extend to screen edges */
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
+        border-radius: 0 !important; /* Remove border radius for full width */
+    }
+
+    /* Yellow header text should be dark for readability */
+    .calendar-header,
+    .calendar-header * {
+        color: #1a1a1a !important;
     }
 
     .calendar-nav {
@@ -683,27 +690,42 @@
         justify-content: center;
     }
 
-    /* FIXED DAY HEADERS - Also stay centered and fixed */
-    .day-headers-container {
-        position: sticky;
-        top: 60px; /* Adjust based on your calendar-header height */
-        z-index: 9;
-        background: inherit;
-        width: 100%;
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 1px;
-        background-color: #404040;
-        margin-bottom: 1px;
+    /* Style buttons in yellow header */
+    .calendar-header .btn,
+    .calendar-header button {
+        background: rgba(0,0,0,0.2) !important;
+        color: #1a1a1a !important;
+        border: none !important;
     }
 
-    .day-header {
-        padding: 8px 2px;
-        font-size: 11px;
-        background: #3a3a3a;
+    .calendar-header .btn:hover,
+    .calendar-header button:hover {
+        background: rgba(0,0,0,0.3) !important;
+    }
+
+    /* FIXED DAY HEADERS - Also stay fixed below the yellow header */
+    .day-headers-fixed {
+        position: sticky !important;
+        top: 85px !important; /* Position below calendar-header */
+        z-index: 90 !important;
+        background: #FFD700 !important; /* Same yellow */
+        margin: 0 -10px 2px -10px !important;
+        padding: 0 10px !important;
+        box-sizing: border-box;
+    }
+
+    /* If day headers are part of calendar grid, separate them */
+    .calendar-grid .day-header {
+        position: sticky !important;
+        top: 85px !important;
+        z-index: 90 !important;
+        background: #3a3a3a !important;
+        color: white !important;
+        padding: 8px 2px !important;
+        font-size: 10px !important;
         text-align: center;
-        white-space: nowrap;
         font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     /* SCROLLABLE CALENDAR CONTAINER */
@@ -713,50 +735,63 @@
         max-width: 100vw;
         padding: 0;
         box-sizing: border-box;
-        /* Enable horizontal scrolling on the calendar container */
-        overflow-x: auto;
-        overflow-y: visible;
+        /* Enable horizontal scrolling */
+        overflow-x: auto !important;
+        overflow-y: visible !important;
         -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        padding-bottom: 10px; /* Space for scrollbar */
     }
 
-    /* SCROLLABLE CALENDAR GRID */
+    /* CALENDAR GRID - Make it wider than viewport to force horizontal scroll */
     .calendar-grid {
         display: grid;
-        /* Fixed width that's wider than viewport to enable scrolling */
-        width: max(100vw, 480px); /* Minimum 480px or viewport width */
-        min-width: 480px;
-        grid-template-columns: repeat(7, minmax(68px, 1fr)); /* Fixed minimum column width */
-        grid-auto-rows: minmax(60px, auto);
-        gap: 1px;
+        /* Force minimum width to enable horizontal scrolling */
+        width: max(100vw, 560px) !important;
+        min-width: 560px !important;
+        grid-template-columns: repeat(7, minmax(80px, 1fr)) !important;
+        grid-auto-rows: minmax(70px, auto);
+        gap: 2px;
         background-color: #404040;
         box-sizing: border-box;
-        /* Remove the day headers from this grid since they're now separate */
-        padding: 0;
+        padding: 2px;
     }
 
-    /* CALENDAR DAYS */
+    /* CALENDAR DAYS - Larger for better touch and readability */
     .calendar-day {
-        min-height: 60px;
-        min-width: 68px; /* Ensure minimum width for readability */
-        padding: 4px;
+        min-height: 70px !important;
+        min-width: 80px !important;
+        padding: 6px !important;
         border: none;
         background: #2d2d2d;
         box-sizing: border-box;
         overflow: hidden;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .calendar-day:hover {
+        background: #3d3d3d;
+    }
+
+    /* Today highlighting with yellow */
+    .calendar-day.today,
+    .calendar-day.current-day {
+        background: #FFD700 !important;
+        color: #1a1a1a !important;
     }
 
     .day-number {
-        font-size: 12px;
-        margin-bottom: 3px;
+        font-size: 14px !important;
+        margin-bottom: 4px;
         line-height: 1;
         font-weight: bold;
     }
 
-    /* EVENTS - More readable on wider cells */
+    /* EVENTS - More readable with better sizing */
     .event {
-        font-size: 9px;
-        padding: 2px 3px;
-        margin-bottom: 1px;
+        font-size: 10px !important;
+        padding: 3px 5px !important;
+        margin-bottom: 2px;
         line-height: 1.2;
         white-space: nowrap;
         overflow: hidden;
@@ -764,7 +799,16 @@
         max-width: 100%;
         box-sizing: border-box;
         display: block;
-        border-radius: 2px;
+        border-radius: 3px;
+        background: #ff6b6b;
+        color: white;
+    }
+
+    /* Test events in yellow to match your screenshot */
+    .event.test,
+    .event[class*="test"] {
+        background: #FFD700 !important;
+        color: #1a1a1a !important;
     }
 
     /* Images and content inside calendar days */
@@ -775,6 +819,53 @@
         display: block;
     }
 
+    /* Custom scrollbar styling to match yellow theme */
+    .calendar-container::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .calendar-container::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+    }
+
+    .calendar-container::-webkit-scrollbar-thumb {
+        background: #FFD700;
+        border-radius: 3px;
+    }
+
+    .calendar-container::-webkit-scrollbar-thumb:hover {
+        background: #FFC000;
+    }
+
+    /* Scroll hint indicator */
+    .calendar-container::after {
+        content: '→';
+        position: fixed;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255,215,0,0.8);
+        color: #1a1a1a;
+        padding: 5px 8px;
+        border-radius: 50%;
+        font-size: 12px;
+        pointer-events: none;
+        animation: pulse 2s infinite;
+        z-index: 1000;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
+    }
+
+    /* Hide scroll hint after first scroll */
+    .calendar-container.scrolled::after {
+        display: none;
+    }
+
+    /* Form and modal adjustments */
     .form-row {
         grid-template-columns: 1fr;
         gap: 15px;
@@ -828,83 +919,71 @@
         background: rgba(0, 0, 0, 0.1);
         border-radius: 6px;
     }
-
-    /* Scroll indicator for better UX */
-    .calendar-container::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 20px;
-        height: 40px;
-        background: linear-gradient(to left, rgba(0,0,0,0.3), transparent);
-        pointer-events: none;
-        border-radius: 4px 0 0 4px;
-    }
-
-    /* Hide scrollbar but keep functionality */
-    .calendar-container::-webkit-scrollbar {
-        height: 3px;
-    }
-
-    .calendar-container::-webkit-scrollbar-track {
-        background: rgba(255,255,255,0.1);
-        border-radius: 2px;
-    }
-
-    .calendar-container::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.3);
-        border-radius: 2px;
-    }
-
-    .calendar-container::-webkit-scrollbar-thumb:hover {
-        background: rgba(255,255,255,0.5);
-    }
 }
 
-/* Extra small screens - adjust minimum widths */
-@media (max-width: 320px) {
+/* Smaller screens - adjust sizes */
+@media (max-width: 480px) {
+    .calendar-header {
+        padding: 12px !important;
+    }
+
     .calendar-grid {
-        min-width: 420px; /* Slightly smaller but still scrollable */
-        grid-template-columns: repeat(7, minmax(60px, 1fr));
+        min-width: 490px !important;
+        grid-template-columns: repeat(7, minmax(70px, 1fr)) !important;
     }
     
     .calendar-day {
-        min-width: 60px;
-        min-height: 55px;
-        padding: 3px;
+        min-width: 70px !important;
+        min-height: 65px !important;
+        padding: 4px !important;
     }
     
     .day-number {
-        font-size: 11px;
-        margin-bottom: 2px;
+        font-size: 12px !important;
+        margin-bottom: 3px;
     }
     
     .event {
-        font-size: 8px;
-        padding: 1px 2px;
+        font-size: 9px !important;
+        padding: 2px 4px !important;
     }
 }
 
 /* Very small screens */
-@media (max-width: 280px) {
+@media (max-width: 350px) {
     .calendar-grid {
-        min-width: 380px;
-        grid-template-columns: repeat(7, minmax(54px, 1fr));
+        min-width: 420px !important;
+        grid-template-columns: repeat(7, minmax(60px, 1fr)) !important;
     }
     
     .calendar-day {
-        min-width: 54px;
-        min-height: 50px;
-        padding: 2px;
+        min-width: 60px !important;
+        min-height: 60px !important;
+        padding: 3px !important;
     }
     
-    .day-header {
-        padding: 6px 1px;
-        font-size: 10px;
+    .day-number {
+        font-size: 11px !important;
+        margin-bottom: 2px;
+    }
+    
+    .event {
+        font-size: 8px !important;
+        padding: 1px 3px !important;
     }
 }
+
+/* JavaScript helper for scroll hint */
+/* Add this script to your page:
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarContainer = document.querySelector('.calendar-container');
+    if (calendarContainer) {
+        calendarContainer.addEventListener('scroll', function() {
+            this.classList.add('scrolled');
+        }, { once: true });
+    }
+});
+*/
         
         /* Sidebar */
         .sidebar {
