@@ -1,0 +1,48 @@
+// Emergency modal fix - Add this to your index.html as the FIRST script after the CSS
+// This ensures modals are hidden immediately when the page loads
+
+(function() {
+    // Ensure modals are hidden on page load
+    function hideAllModals() {
+        const modalIds = [
+            'authModal',
+            'onboardingModal', 
+            'eventModal',
+            'eventPreviewModal',
+            'helpModal',
+            'termsModal',
+            'guidelinesModal'
+        ];
+        
+        modalIds.forEach(function(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            }
+        });
+    }
+    
+    // Hide modals immediately if DOM is already loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideAllModals);
+    } else {
+        hideAllModals();
+    }
+    
+    // Also hide modals after a short delay to catch any late-rendering issues
+    setTimeout(hideAllModals, 100);
+    
+    // Force modal functions to work if they don't exist yet
+    window.forceShowAuthModal = function() {
+        const modal = document.getElementById('authModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        }
+    };
+    
+    window.forceHideAllModals = function() {
+        hideAllModals();
+    };
+})();
