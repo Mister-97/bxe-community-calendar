@@ -173,36 +173,63 @@ function goToToday() {
 // Update upcoming events sidebar
 function updateUpcomingEvents() {
     const container = document.getElementById('upcomingEvents');
+    if (!container) {
+        console.error('upcomingEvents container not found');
+        return;
+    }
+    
     const centralTimeNow = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Chicago"}));
     
     let upcomingEvents = events
         .filter(event => new Date(event.start) > centralTimeNow)
         .sort((a, b) => new Date(a.start) - new Date(b.start));
 
-    // Apply search filter if active
+    // Apply text search filter if active
     if (currentSearchQuery) {
         const searchLower = currentSearchQuery.toLowerCase();
         upcomingEvents = upcomingEvents.filter(event => {
             const title = (event.title || '').toLowerCase();
             const description = (event.description || '').toLowerCase();
             const location = (event.location || '').toLowerCase();
+            const category = (event.category || '').toLowerCase();
             
             return title.includes(searchLower) ||
                    description.includes(searchLower) ||
-                   location.includes(searchLower);
+                   location.includes(searchLower) ||
+                   category.includes(searchLower);
         });
+    }
+
+    // Apply category filter if active
+    if (currentCategoryFilter) {
+        upcomingEvents = upcomingEvents.filter(event => {
+            return event.category === currentCategoryFilter;
+        });
+    }
         
-        if (upcomingEvents.length === 0) {
-            container.innerHTML = `
-                <div class="no-events">
-                    <p>No events found</p>
-                    <p style="font-size: 12px;">Try a different search term</p>
-                </div>
-            `;
-            return;
+    // Handle no results from filtering
+    if (upcomingEvents.length === 0 && (currentSearchQuery || currentCategoryFilter)) {
+        let filterMessage = '';
+        if (currentSearchQuery && currentCategoryFilter) {
+            filterMessage = `search "${currentSearchQuery}" in ${currentCategoryFilter}`;
+        } else if (currentCategoryFilter) {
+            filterMessage = `"${currentCategoryFilter}" category`;
+        } else {
+            filterMessage = 'search terms';
         }
-    } else {
-        upcomingEvents = upcomingEvents.slice(0, 5);
+        
+        container.innerHTML = `
+            <div class="no-events">
+                <p>🔍 No events found</p>
+                <p style="font-size: 12px;">No events match your ${filterMessage}</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Limit to 8 events if no filters applied
+    if (!currentSearchQuery && !currentCategoryFilter) {
+        upcomingEvents = upcomingEvents.slice(0, 8);
     }
 
     if (upcomingEvents.length === 0) {
@@ -217,21 +244,41 @@ function updateUpcomingEvents() {
 
     container.innerHTML = upcomingEvents.map(event => {
         const adminDeleteBtn = isAdmin ? 
-            `<button class="admin-delete-btn" onclick="event.stopPropagation(); adminDeleteEvent('${event.id}', '${event.title.replace(/'/g, "\\'")}');" title="Delete event (Admin)" style="position: absolute; top: 5px; right: 5px;">×</button>` : '';
+            `<button class="admin-delete-btn" onclick="event.stopPropagation(); adminDeleteEvent('${event.id}', '${event.title.replace(/'/g, "\\'")}');" title="Delete event (Admin)" style="position: absolute; top: 8px; right: 8px; z-index: 10;">×</button>` : '';
         
-        const imageHtml = event.image_url ? 
-            `<img src="${event.image_url}" class="upcoming-event-image" alt="${event.title}">` : '';
+        // Create image element or placeholder
+        const imageElement = event.image_url ? 
+            `<img src="${event.image_url}" class="upcoming-event-image" alt="${event.title}">` :
+            `<div class="upcoming-event-placeholder">📅</div>`;
+        
+        // Display category if available
+        const categoryDisplay = event.category ? 
+            `<div class="upcoming-event-category">${event.category}</div>` : '';
         
         return `
             <div class="upcoming-event" onclick="showEventDetails(${JSON.stringify(event).replace(/"/g, '&quot;')})" style="position: relative;">
                 ${adminDeleteBtn}
                 <div class="upcoming-event-content">
-                    <div class="upcoming-event-title">${event.title}</div>
+                    <div class="upcoming-event-title" title="${event.title}">${event.title}</div>
+                    ${categoryDisplay}
                     <div class="upcoming-event-date">${formatEventDate(event.start)}</div>
                     <div class="upcoming-event-creator">by ${event.created_by_name}</div>
                 </div>
-                ${imageHtml}
+                ${imageElement}
             </div>
         `;
     }).join('');
+}
+
+// Category filtering functionality
+let currentCategoryFilter = '';
+
+function setupCategoryFilter() {
+    const categoryFilter = document.getElementById('categoryFilter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', function(e) {
+            currentCategoryFilter = e.target.value;
+            updateUpcomingEvents();
+        });
+    }
 }

@@ -1,0 +1,288 @@
+/* Modal Styles - Ensure modals are hidden by default */
+
+.modal {
+    display: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+}
+
+.modal.show {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: #2d2d2d;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #404040;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: clamp(16px, 4vw, 20px);
+    font-weight: 600;
+    color: #e0e6ed;
+}
+
+/* Event owner controls styling */
+#eventOwnerControls .btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: 1px solid #5a6268;
+}
+
+#eventOwnerControls .btn-secondary:hover {
+    background: #5a6268;
+    border-color: #545b62;
+    transform: translateY(-1px);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #b0b0b0;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    color: #ffd700;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid #404040;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+/* Auth Modal Specific Styles */
+.auth-modal .modal-content {
+    max-width: 400px;
+}
+
+.auth-toggle {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.toggle-link {
+    color: #ffd700;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.toggle-link:hover {
+    color: #e6c200;
+}
+
+.divider {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+    color: #888;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #404040;
+}
+
+.divider span {
+    background: #2d2d2d;
+    padding: 0 15px;
+}
+
+.google-btn {
+    width: 100%;
+    background: #4285f4;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.google-btn:hover {
+    background: #357ae8;
+}
+
+/* Onboarding Modal Specific Styles */
+.onboarding-modal .modal-content {
+    max-width: 600px;
+}
+
+.terms-section {
+    margin-bottom: 20px;
+}
+
+.terms-content {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.terms-content h5 {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.terms-content ul {
+    font-size: 12px;
+}
+
+.terms-content li {
+    margin-bottom: 3px;
+}
+
+.terms-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.terms-checkbox input[type="checkbox"] {
+    margin-top: 3px;
+    min-width: 16px;
+}
+
+.terms-text {
+    font-size: 13px;
+    color: #b0b0b0;
+    line-height: 1.4;
+}
+
+/* Image Upload Styles */
+.upload-area {
+    border: 2px dashed #666;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    background: #3a3a3a;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    border-color: #ffd700;
+}
+
+.upload-area.has-image {
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+.image-preview {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.preview-image {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.preview-info {
+    line-height: 1.8;
+}
+
+.preview-field {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.preview-label {
+    font-weight: 600;
+    min-width: 120px;
+    color: #e0e6ed;
+    flex-shrink: 0;
+}
+
+/* Help Modal Specific Styles */
+.help-modal .modal-content {
+    max-width: 600px;
+}
+
+.help-section {
+    margin-bottom: 25px;
+}
+
+.help-section h5 {
+    color: #ffd700;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.help-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.help-section li {
+    padding: 5px 0;
+    padding-left: 20px;
+    position: relative;
+}
+
+.help-section li:before {
+    content: "•";
+    color: #ffd700;
+    position: absolute;
+    left: 0;
+}
+
+/* Force hide modal content when not in modal context */
+#authModal:not(.show) .modal-content,
+#onboardingModal:not(.show) .modal-content,
+#eventModal:not(.show) .modal-content,
+#eventPreviewModal:not(.show) .modal-content,
+#helpModal:not(.show) .modal-content {
+    display: none !important;
+}

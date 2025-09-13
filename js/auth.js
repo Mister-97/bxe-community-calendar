@@ -24,7 +24,7 @@ function setupAuthStateListener() {
     });
 }
 
-// Check if user has completed profile setup
+// Add this inside the checkUserProfile function, after getting the profile
 async function checkUserProfile() {
     if (!currentUser) return;
     
@@ -34,14 +34,27 @@ async function checkUserProfile() {
         if (profileDoc.exists) {
             userProfile = profileDoc.data();
             updateAuthButton('authenticated');
+            
+            // ADD THIS: Get and save FCM token for authenticated users
+            const fcmToken = await getFCMToken();
+            if (fcmToken) {
+                await saveFCMTokenToProfile(fcmToken);
+            }
+            
         } else {
             userProfile = null;
             updateAuthButton('needs_onboarding');
+            setTimeout(() => {
+                openOnboardingModal();
+            }, 500);
         }
     } catch (error) {
         console.error('Error checking user profile:', error);
         userProfile = null;
         updateAuthButton('needs_onboarding');
+        setTimeout(() => {
+            openOnboardingModal();
+        }, 500);
     }
 }
 
@@ -68,7 +81,7 @@ function updateAuthButton(state) {
             authButton.className = 'btn btn-auth';
             break;
         case 'needs_onboarding':
-            authButton.textContent = 'Finish setup';
+            authButton.textContent = 'Complete setup';
             authButton.className = 'btn btn-primary';
             break;
         case 'authenticated':
@@ -125,12 +138,14 @@ async function handleAuthSubmit(event) {
     try {
         if (isSignUpMode) {
             await auth.createUserWithEmailAndPassword(email, password);
+            closeAuthModal();
+            showToast('Account created! Please complete your profile.');
+            // Don't open onboarding here - it will be opened by checkUserProfile()
         } else {
             await auth.signInWithEmailAndPassword(email, password);
+            closeAuthModal();
+            showToast('Logged in successfully!');
         }
-        
-        closeAuthModal();
-        showToast(isSignUpMode ? 'Account created successfully!' : 'Logged in successfully!');
     } catch (error) {
         console.error('Auth error:', error);
         showToast(error.message, 'error');
@@ -193,7 +208,7 @@ async function handleOnboardingSubmit(event) {
         closeOnboardingModal();
         updateAuthButton('authenticated');
         updateAuthUI(true);
-        showToast('Profile created successfully!');
+        showToast('Profile created successfully! You can now create events.');
     } catch (error) {
         console.error('Error creating profile:', error);
         showToast('Failed to create profile. Please try again.', 'error');
@@ -202,3 +217,12 @@ async function handleOnboardingSubmit(event) {
         submitBtn.textContent = 'Complete Setup';
     }
 }
+
+// Export functions to global scope
+window.handleAuthButtonClick = handleAuthButtonClick;
+window.toggleAuthMode = toggleAuthMode;
+window.handleAuthSubmit = handleAuthSubmit;
+window.signInWithGoogle = signInWithGoogle;
+window.logout = logout;
+window.handleOnboardingSubmit = handleOnboardingSubmit;
+window.setupAuthStateListener = setupAuthStateListener;

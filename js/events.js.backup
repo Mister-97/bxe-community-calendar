@@ -86,15 +86,15 @@ async function saveEvent() {
         }
 
         const eventData = {
-    title: document.getElementById('eventTitle').value.trim(),
-    category: document.getElementById('eventCategory').value,
-    start: document.getElementById('startDate').value,
-    end: document.getElementById('endDate').value,
-    location: document.getElementById('location').value.trim(),
-    description: document.getElementById('description').value.trim(),
-    image_url: uploadedImage || null,
-    updated_at: firebase.firestore.FieldValue.serverTimestamp()
-};
+            title: document.getElementById('eventTitle').value.trim(),
+            start: document.getElementById('startDate').value,
+            end: document.getElementById('endDate').value,
+            location: document.getElementById('location').value.trim(),
+            description: document.getElementById('description').value.trim(),
+            image_url: uploadedImage || null,
+            updated_at: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
         if (!editingEventId) {
             eventData.created_by_uid = currentUser.uid;
             eventData.created_by_name = userProfile.full_name;

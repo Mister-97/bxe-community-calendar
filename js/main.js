@@ -14,6 +14,7 @@ function initializeApplication() {
     setupModalEventListeners();
     setupImageUpload();
     setupSearch();
+setupCategoryFilter();
     
     // Load initial data
     loadEventsFromFirebase();
@@ -133,3 +134,4 @@ window.closeGuidelinesModal = closeGuidelinesModal;
 window.openAuthModal = openAuthModal;
 window.openOnboardingModal = openOnboardingModal;
 window.openEventModal = openEventModal;
+window.openEditEventModal = openEditEventModal;

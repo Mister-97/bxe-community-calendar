@@ -34,3 +34,48 @@ const monthNames = [
 ];
 
 const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+// FCM Token management (will be available after messaging script loads)
+async function getFCMToken() {
+    if (!firebase.messaging) {
+        console.log('Firebase messaging not available');
+        return null;
+    }
+    
+    try {
+        const messaging = firebase.messaging();
+        const currentToken = await messaging.getToken({
+            vapidKey: 'BG3fc9jg5P-vkhUcCQ6NvdcGNOrr2dGRSQ8892BwNehPjjrnPXVx5B_8H8TsBeWeh9mL7HCnlLrvyONya7Q6gdY'
+        });
+        
+        if (currentToken) {
+            console.log('FCM Token:', currentToken);
+            return currentToken;
+        } else {
+            console.log('No registration token available.');
+            return null;
+        }
+    } catch (err) {
+        console.log('An error occurred while retrieving token. ', err);
+        return null;
+    }
+}
+
+// Save FCM token to user profile
+async function saveFCMTokenToProfile(token) {
+    if (!currentUser || !token) return;
+    
+    try {
+        await db.collection('profiles').doc(currentUser.uid).update({
+            fcmToken: token,
+            updated_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log('FCM token saved to profile');
+    } catch (error) {
+        console.error('Error saving FCM token:', error);
+    }
+}
+
+// Make functions available globally
+window.getFCMToken = getFCMToken;
+window.saveFCMTokenToProfile = saveFCMTokenToProfile;
