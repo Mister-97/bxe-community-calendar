@@ -1,0 +1,257 @@
+/* Mobile Responsive Styles */
+
+/* Tablet styles */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .header-controls {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .user-info {
+        order: -1;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .calendar-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .calendar-nav {
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .calendar-grid {
+        grid-auto-rows: minmax(70px, auto);
+    }
+
+    .calendar-day {
+        min-height: 70px;
+        padding: 6px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .modal-footer {
+        justify-content: center;
+    }
+
+    .preview-field {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .preview-label {
+        min-width: auto;
+    }
+
+    .upcoming-event {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .upcoming-event-image {
+        width: 100%;
+        height: 120px;
+        max-width: 200px;
+    }
+
+    .footer-links {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+
+    .calendar-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .calendar-grid {
+        grid-auto-rows: minmax(60px, auto);
+    }
+
+    .calendar-day {
+        min-height: 60px;
+        padding: 4px;
+    }
+
+    .day-header {
+        padding: 8px;
+    }
+
+    .event {
+        padding: 2px 4px;
+        margin-bottom: 1px;
+    }
+
+    .modal-content {
+        width: 95vw;
+        max-height: 90vh;
+        margin: 5vh auto;
+    }
+
+    .modal-body {
+        padding: 15px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .modal-header, .modal-footer {
+        padding: 15px;
+    }
+
+    .form-input, .form-select, .form-textarea {
+        padding: 14px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+        min-height: 44px;
+    }
+
+    .upload-area {
+        padding: 20px;
+    }
+
+    .success-toast {
+        right: 10px;
+        left: 10px;
+        top: 10px;
+        transform: translateY(-100%);
+    }
+
+    .success-toast.show {
+        transform: translateY(0);
+    }
+}
+
+/* Small mobile styles */
+@media (max-width: 320px) {
+    .calendar-grid {
+        min-width: 480px;
+    }
+
+    .calendar-day {
+        min-height: 50px;
+        padding: 3px;
+    }
+
+    .day-number {
+        margin-bottom: 3px;
+    }
+
+    .event {
+        font-size: 9px;
+        padding: 1px 3px;
+    }
+}
+
+/* Landscape mobile styles */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-content {
+        max-height: 95vh;
+    }
+
+    .modal-body {
+        max-height: 50vh;
+    }
+
+    .calendar-day {
+        min-height: 50px;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+    .image-preview, .preview-image, .upcoming-event-image {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+    /* The app is already dark themed, but you could add adjustments here */
+}
+
+/* Print styles */
+@media print {
+    .header-controls, .modal, .success-toast, .footer {
+        display: none !important;
+    }
+    
+    .calendar-container, .sidebar {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+}
+
+/* Focus styles for accessibility */
+.btn:focus, .form-input:focus, .form-select:focus, .form-textarea:focus, 
+.nav-btn:focus, .close-btn:focus, .search-input:focus {
+    outline: 2px solid #ffd700;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .calendar-day {
+        border-width: 2px;
+    }
+    
+    .event {
+        border: 1px solid #1a1a1a;
+    }
+    
+    .btn {
+        border: 1px solid currentColor;
+    }
+}
