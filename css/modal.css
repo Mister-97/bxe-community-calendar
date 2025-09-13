@@ -1,7 +1,7 @@
-/* Modal Styles */
+/* Modal Styles - Ensure modals are hidden by default */
 
 .modal {
-    display: none;
+    display: none !important;
     position: fixed;
     top: 0;
     left: 0;
@@ -12,7 +12,7 @@
 }
 
 .modal.show {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
 }
@@ -263,4 +263,13 @@
     color: #ffd700;
     position: absolute;
     left: 0;
+}
+
+/* Force hide modal content when not in modal context */
+#authModal:not(.show) .modal-content,
+#onboardingModal:not(.show) .modal-content,
+#eventModal:not(.show) .modal-content,
+#eventPreviewModal:not(.show) .modal-content,
+#helpModal:not(.show) .modal-content {
+    display: none !important;
 }
