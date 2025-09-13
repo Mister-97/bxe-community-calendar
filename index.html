@@ -116,8 +116,295 @@
         </div>
     </div>
 
-    <!-- Include other modals here (onboarding, event, preview, help, etc.) -->
-    <!-- For brevity, I'm showing the structure - you'd add all modals from your original HTML -->
+    <!-- Onboarding Modal -->
+    <div id="onboardingModal" class="modal onboarding-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Complete Your Profile</div>
+            </div>
+            <div class="modal-body">
+                <form id="onboardingForm" onsubmit="handleOnboardingSubmit(event)">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" id="fullName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="tel" class="form-input" id="phoneNumber" placeholder="(555) 123-4567" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Contact Email *</label>
+                        <input type="email" class="form-input" id="contactEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Company Name *</label>
+                        <input type="text" class="form-input" id="companyName" placeholder="Your company or organization" required>
+                    </div>
+                    
+                    <!-- Terms and Agreement Section -->
+                    <div class="terms-section">
+                        <h4 style="color: #ffd700; margin-bottom: 15px;">Terms and Community Agreement</h4>
+                        <div class="terms-content" style="max-height: 300px; overflow-y: auto; padding: 15px; background: #3a3a3a; border-radius: 8px; margin-bottom: 15px; border: 1px solid #555;">
+                            
+                            <h5 style="color: #ffd700; margin-bottom: 10px;">Liability Disclaimer</h5>
+                            <p style="margin-bottom: 15px;"><strong>The Black Experience Community Calendar and BXE LLC are not responsible for:</strong></p>
+                            <ul style="margin-bottom: 15px; padding-left: 20px;">
+                                <li>Events posted by community members</li>
+                                <li>Event cancellations, changes, or inaccuracies</li>
+                                <li>Any damages, injuries, or losses related to attended events</li>
+                                <li>Third-party content or external links</li>
+                                <li>User interactions or disputes</li>
+                            </ul>
+                            
+                            <h5 style="color: #ffd700; margin-bottom: 10px;">User Responsibilities</h5>
+                            <p style="margin-bottom: 10px;">You are solely responsible for:</p>
+                            <ul style="margin-bottom: 15px; padding-left: 20px;">
+                                <li>The accuracy of your event information</li>
+                                <li>Compliance with all applicable laws</li>
+                                <li>Your own safety when attending events</li>
+                                <li>Verifying event details before attending</li>
+                                <li>Respectful interaction with other community members</li>
+                                <li>Updating or canceling your events promptly if needed</li>
+                            </ul>
+                            
+                            <h5 style="color: #ffd700; margin-bottom: 10px;">Moderation Rights</h5>
+                            <p style="margin-bottom: 10px;">We reserve the right to:</p>
+                            <ul style="margin-bottom: 15px; padding-left: 20px;">
+                                <li>Remove any content that violates our guidelines without notice</li>
+                                <li>Suspend or terminate accounts for repeated violations</li>
+                                <li>Moderate events to ensure community standards</li>
+                                <li>Update these terms and guidelines as needed</li>
+                            </ul>
+                            
+                            <h5 style="color: #ffd700; margin-bottom: 10px;">Community Guidelines</h5>
+                            <p style="margin-bottom: 10px;"><strong>Encouraged Content:</strong></p>
+                            <ul style="margin-bottom: 10px; padding-left: 20px; color: #28a745;">
+                                <li>Educational workshops and seminars</li>
+                                <li>Cultural celebrations and performances</li>
+                                <li>Business networking and professional development</li>
+                                <li>Community service and volunteer opportunities</li>
+                                <li>Family-friendly entertainment</li>
+                                <li>Health and wellness activities</li>
+                                <li>Arts, music, and creative events</li>
+                            </ul>
+                            
+                            <p style="margin-bottom: 10px;"><strong>Prohibited Content:</strong></p>
+                            <ul style="margin-bottom: 15px; padding-left: 20px; color: #dc3545;">
+                                <li>Hate speech or discriminatory language</li>
+                                <li>Adult or inappropriate content</li>
+                                <li>Political campaigning or partisan content</li>
+                                <li>Illegal activities or substances</li>
+                                <li>Spam or excessive self-promotion</li>
+                                <li>False or misleading information</li>
+                                <li>Events that exclude based on protected characteristics</li>
+                            </ul>
+                            
+                            <p style="font-size: 12px; color: #888; margin-top: 20px;">Last updated: September 2025</p>
+                        </div>
+                        
+                        <div class="terms-checkbox">
+                            <input type="checkbox" id="termsCheckbox" required>
+                            <label for="termsCheckbox" class="terms-text">
+                                I have read and agree to the terms, disclaimer, user responsibilities, moderation rights, and community guidelines above. I understand that I am solely responsible for my event information and safety when attending events.
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;" id="onboardingSubmitBtn">
+                        Complete Setup
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Modal -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Create Event</div>
+                <button class="close-btn" onclick="closeEventModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Event Title *</label>
+                    <input type="text" class="form-input" id="eventTitle" placeholder="Enter event title" required>
+                    <div class="error-message" id="titleError">Please enter an event title</div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Start Date & Time *</label>
+                        <input type="datetime-local" class="form-input" id="startDate" required>
+                        <div class="error-message" id="startError">Please select a start date</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Date & Time *</label>
+                        <input type="datetime-local" class="form-input" id="endDate" required>
+                        <div class="error-message" id="endError">Please select an end date</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" class="form-input" id="location" placeholder="Event location">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="description" placeholder="Event details"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Created by</label>
+                    <input type="text" class="form-input" id="createdByName" readonly style="background: #222; color: #888;">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Event Image</label>
+                    <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
+                        <div id="uploadText">
+                            <div style="font-size: 24px; margin-bottom: 8px;">📷</div>
+                            <div>Click to upload image or drag and drop</div>
+                            <div style="font-size: 12px; color: #888; margin-top: 4px;">PNG, JPG up to 5MB</div>
+                        </div>
+                        <div id="imagePreview" style="display: none;"></div>
+                    </div>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeEventModal()">Cancel</button>
+                <button class="btn btn-primary" id="saveEventBtn" onclick="saveEvent()">Create Event</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Preview Modal -->
+    <div id="eventPreviewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="previewEventTitle">Event Details</div>
+                <button class="close-btn" onclick="closeEventPreviewModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="previewEventImage" style="margin-bottom: 20px;"></div>
+                
+                <div class="preview-info">
+                    <div class="preview-field">
+                        <span class="preview-label">📅 Start:</span>
+                        <span id="previewEventStart"></span>
+                    </div>
+                    
+                    <div class="preview-field">
+                        <span class="preview-label">🏁 End:</span>
+                        <span id="previewEventEnd"></span>
+                    </div>
+                    
+                    <div class="preview-field">
+                        <span class="preview-label">📍 Location:</span>
+                        <span id="previewEventLocation"></span>
+                    </div>
+                    
+                    <div class="preview-field">
+                        <span class="preview-label">📝 Description:</span>
+                        <span id="previewEventDescription"></span>
+                    </div>
+                    
+                    <div class="preview-field">
+                        <span class="preview-label">👤 Created by:</span>
+                        <span id="previewEventCreator"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div id="eventOwnerControls" style="display: none; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="editCurrentEvent()">Edit Event</button>
+                    <button class="btn btn-danger" onclick="deleteCurrentEvent()">Delete Event</button>
+                </div>
+                <button class="btn btn-cancel" onclick="closeEventPreviewModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal help-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Help & Support</div>
+                <button class="close-btn" onclick="closeHelpModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h5>🔐 Authentication</h5>
+                    <ul>
+                        <li>Click "Log in to post" to create an account or sign in</li>
+                        <li>Complete your profile setup after first login</li>
+                        <li>Only authenticated users can create events</li>
+                        <li>Use Google sign-in for quick access</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h5>📅 Creating Events</h5>
+                    <ul>
+                        <li>Click "Post an event" when logged in</li>
+                        <li>Or click on any calendar date to create an event for that day</li>
+                        <li>Fill in required fields (title, start/end times) and save</li>
+                        <li>Add images, descriptions, and location details</li>
+                        <li>Events are immediately visible to the community</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h5>👀 Viewing Events</h5>
+                    <ul>
+                        <li>Click any event on the calendar to see full details</li>
+                        <li>View upcoming events in the sidebar</li>
+                        <li>Use the search box to find specific events</li>
+                        <li>Navigate months using the arrow buttons</li>
+                        <li>Click "Today" to return to the current date</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h5>✏️ Managing Your Events</h5>
+                    <ul>
+                        <li>Edit or delete events you created by clicking on them</li>
+                        <li>Update event details anytime before the event</li>
+                        <li>Cancel events promptly if plans change</li>
+                        <li>Rate limits apply: 5 per hour, 20 per day, 50 per week</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h5>📱 Mobile Tips</h5>
+                    <ul>
+                        <li>Swipe horizontally on the calendar for easier navigation</li>
+                        <li>Tap and hold on events for quick actions (on supported devices)</li>
+                        <li>Use the search feature to quickly find events</li>
+                        <li>All features work the same on mobile and desktop</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h5>🆘 Need More Help?</h5>
+                    <ul>
+                        <li>Contact our support team using the footer links</li>
+                        <li>Review our Community Guidelines for event standards</li>
+                        <li>Check Terms & Agreement for usage policies</li>
+                        <li>Report issues or inappropriate content to admins</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeHelpModal()">Got it!</button>
+            </div>
+        </div>
+    </div>
 
     <!-- JavaScript Files -->
     <script src="js/config.js"></script>
