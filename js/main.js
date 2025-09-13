@@ -130,3 +130,6 @@ window.closeEventPreviewModal = closeEventPreviewModal;
 window.closeHelpModal = closeHelpModal;
 window.closeTermsModal = closeTermsModal;
 window.closeGuidelinesModal = closeGuidelinesModal;
+window.openAuthModal = openAuthModal;
+window.openOnboardingModal = openOnboardingModal;
+window.openEventModal = openEventModal;
