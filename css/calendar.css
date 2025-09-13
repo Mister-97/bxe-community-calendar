@@ -1,0 +1,158 @@
+/* Calendar Styles */
+
+.calendar-container {
+    background: #2d2d2d;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.calendar-header {
+    padding: 20px;
+    background: #ffd700;
+    color: #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-btn {
+    background: rgba(26,26,26,0.2);
+    border: none;
+    color: #1a1a1a;
+    font-size: 18px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-btn:hover {
+    background: rgba(26,26,26,0.3);
+}
+
+.month-year {
+    font-size: clamp(18px, 5vw, 24px);
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: minmax(80px, auto);
+}
+
+.day-header {
+    background: #3a3a3a;
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+    color: #b0b0b0;
+    font-size: clamp(10px, 2.5vw, 14px);
+    text-transform: uppercase;
+}
+
+.calendar-day {
+    min-height: 80px;
+    border: 1px solid #404040;
+    padding: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    flex-direction: column;
+    background: #2d2d2d;
+}
+
+.calendar-day:hover {
+    background: #404040;
+}
+
+.calendar-day.other-month {
+    color: #666;
+    background: #1f1f1f;
+}
+
+.calendar-day.today {
+    background: #ffd700;
+    color: #1a1a1a;
+}
+
+.day-number {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: clamp(12px, 3vw, 16px);
+}
+
+.events {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.event {
+    background: #ffd700;
+    color: #1a1a1a;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: clamp(9px, 2.2vw, 12px);
+    cursor: pointer;
+    transition: background 0.3s;
+    position: relative;
+    font-weight: 500;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.event:hover {
+    background: #e6c200;
+}
+
+.admin-controls {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    display: none;
+}
+
+.admin-controls.show {
+    display: block;
+}
+
+.admin-delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.admin-delete-btn:hover {
+    opacity: 1;
+    background: #c82333;
+}
