@@ -12,6 +12,16 @@ body {
     color: #e0e6ed;
     line-height: 1.6;
 }
+.btn-warning {
+       background-color: #ffc107;
+       color: #212529;
+       border: 1px solid #ffc107;
+   }
+   
+   .btn-warning:hover {
+       background-color: #e0a800;
+       border-color: #d39e00;
+   }
 
 .container {
     max-width: 1200px;
@@ -223,6 +233,19 @@ body {
     color: #e0e6ed;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.forgot-password-link {
+    font-size: 12px;
+}
+
+.toggle-link {
+    color: #ffd700;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.toggle-link:hover {
+    color: #e6c200;
 }
 
 .search-input:focus {

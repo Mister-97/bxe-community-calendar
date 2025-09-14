@@ -24,9 +24,15 @@ function setupAuthStateListener() {
     });
 }
 
-// Add this inside the checkUserProfile function, after getting the profile
+// Check if user has completed profile setup and email verification
 async function checkUserProfile() {
     if (!currentUser) return;
+    
+    // Check if email is verified first
+    if (!currentUser.emailVerified) {
+        updateAuthButton('needs_verification');
+        return;
+    }
     
     try {
         const profileDoc = await db.collection('profiles').doc(currentUser.uid).get();
@@ -35,7 +41,7 @@ async function checkUserProfile() {
             userProfile = profileDoc.data();
             updateAuthButton('authenticated');
             
-            // ADD THIS: Get and save FCM token for authenticated users
+            // Get and save FCM token for authenticated users
             const fcmToken = await getFCMToken();
             if (fcmToken) {
                 await saveFCMTokenToProfile(fcmToken);
@@ -80,6 +86,10 @@ function updateAuthButton(state) {
             authButton.textContent = 'Log in to post';
             authButton.className = 'btn btn-auth';
             break;
+        case 'needs_verification':
+            authButton.textContent = 'Verify email to post';
+            authButton.className = 'btn btn-warning';
+            break;
         case 'needs_onboarding':
             authButton.textContent = 'Complete setup';
             authButton.className = 'btn btn-primary';
@@ -95,6 +105,13 @@ function updateAuthButton(state) {
 function handleAuthButtonClick() {
     if (!currentUser) {
         openAuthModal();
+    } else if (!currentUser.emailVerified) {
+        // Resend verification email
+        currentUser.sendEmailVerification().then(() => {
+            showToast('Verification email sent! Check your inbox and spam folder.');
+        }).catch(error => {
+            showToast('Error sending verification email: ' + error.message, 'error');
+        });
     } else if (!userProfile) {
         openOnboardingModal();
     } else {
@@ -131,20 +148,30 @@ async function handleAuthSubmit(event) {
     const email = document.getElementById('authEmail').value;
     const password = document.getElementById('authPassword').value;
     const submitBtn = document.getElementById('authSubmitBtn');
-    
+
     submitBtn.disabled = true;
     submitBtn.textContent = isSignUpMode ? 'Signing up...' : 'Logging in...';
     
     try {
         if (isSignUpMode) {
-            await auth.createUserWithEmailAndPassword(email, password);
+            // Create account
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            
+            // Send email verification
+            await userCredential.user.sendEmailVerification();
+            
             closeAuthModal();
-            showToast('Account created! Please complete your profile.');
-            // Don't open onboarding here - it will be opened by checkUserProfile()
+            showToast('Account created! Please check your email and verify your address before creating events.');
+            
         } else {
             await auth.signInWithEmailAndPassword(email, password);
             closeAuthModal();
-            showToast('Logged in successfully!');
+            
+            if (!currentUser.emailVerified) {
+                showToast('Please verify your email before creating events. Check your inbox for the verification link.');
+            } else {
+                showToast('Logged in successfully!');
+            }
         }
     } catch (error) {
         console.error('Auth error:', error);
@@ -163,6 +190,7 @@ async function signInWithGoogle() {
         await auth.signInWithPopup(provider);
         closeAuthModal();
         showToast('Logged in with Google successfully!');
+        // Note: Google accounts are automatically verified
     } catch (error) {
         console.error('Google sign-in error:', error);
         showToast(error.message, 'error');
@@ -180,6 +208,60 @@ async function logout() {
         showToast(error.message, 'error');
     }
 }
+
+// Show forgot password form
+function showForgotPassword() {
+    document.getElementById('authForm').style.display = 'none';
+    document.getElementById('forgotPasswordSection').style.display = 'block';
+    document.getElementById('authModalTitle').textContent = 'Reset Password';
+}
+
+// Show main auth form
+function showAuthForm() {
+    document.getElementById('authForm').style.display = 'block';
+    document.getElementById('forgotPasswordSection').style.display = 'none';
+    document.getElementById('authModalTitle').textContent = isSignUpMode ? 'Sign Up' : 'Log In';
+}
+
+// Send password reset email
+async function sendPasswordReset() {
+    const email = document.getElementById('resetEmail').value.trim();
+    const resetBtn = document.getElementById('resetBtn');
+    
+    if (!email) {
+        showToast('Please enter your email address', 'error');
+        return;
+    }
+    
+    resetBtn.disabled = true;
+    resetBtn.textContent = 'Sending...';
+    
+    try {
+        await auth.sendPasswordResetEmail(email);
+        showToast('Password reset email sent! Check your inbox.');
+        
+        // Clear form and go back to login
+        document.getElementById('resetEmail').value = '';
+        showAuthForm();
+        
+    } catch (error) {
+        console.error('Password reset error:', error);
+        
+        // Handle specific errors
+        if (error.code === 'auth/user-not-found') {
+            showToast('No account found with that email address', 'error');
+        } else if (error.code === 'auth/invalid-email') {
+            showToast('Please enter a valid email address', 'error');
+        } else {
+            showToast('Error sending reset email: ' + error.message, 'error');
+        }
+    } finally {
+        resetBtn.disabled = false;
+        resetBtn.textContent = 'Send Reset Email';
+    }
+}
+
+
 
 // Handle onboarding form submission
 async function handleOnboardingSubmit(event) {
@@ -226,3 +308,6 @@ window.signInWithGoogle = signInWithGoogle;
 window.logout = logout;
 window.handleOnboardingSubmit = handleOnboardingSubmit;
 window.setupAuthStateListener = setupAuthStateListener;
+window.showForgotPassword = showForgotPassword;
+window.showAuthForm = showAuthForm;
+window.sendPasswordReset = sendPasswordReset;
