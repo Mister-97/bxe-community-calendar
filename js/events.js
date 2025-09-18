@@ -308,9 +308,7 @@ function validateEventFormWithCategory() {
     const title = document.getElementById('eventTitle').value.trim();
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
-    const categorySelect = document.getElementById("eventCategory");
-    const categories = Array.from(categorySelect.selectedOptions).map(opt => opt.value);
-
+    const category = document.getElementById('eventCategory').value;
 
     const errorElements = document.querySelectorAll('.error-message');
     const inputElements = document.querySelectorAll('.form-input, .form-select');
