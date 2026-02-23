@@ -20,6 +20,7 @@ const ADMIN_EMAILS = [
     '97franchise@gmail.com',
     'afgarner@bxellc.com',
     'craigdbarnes@gmail.com'
+    'dremeekins@gmail.com'
 ];
 
 const RATE_LIMITS = {
